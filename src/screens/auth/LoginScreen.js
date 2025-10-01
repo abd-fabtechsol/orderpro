@@ -99,7 +99,7 @@ const LoginScreen = () => {
 
 
 
-            <AppButton onPress={() => navigation.navigate("OtpScreen")} title="Continue with phone" />
+            <AppButton onPress={() => navigation.navigate("otp")} title="Continue with phone" />
             <AppButton image={pic} title="Continue with google" style={{ marginTop: 10, backgroundColor: "transparent", borderWidth: 2, borderColor: colors.border }} textStyle={{ color: colors.text }} />
             <RbSheetComponet
                 ref={countryCodeSheetRef}

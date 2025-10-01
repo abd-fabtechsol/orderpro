@@ -2,41 +2,14 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
-import LoginScreen from '../screens/LoginScreen';
 import { useTheme } from '../context/ThemeContext';
-import HomeScreen from '../screens/HomeScreen';
 
-const ProfileScreen = () => (
-  <View style={styles.center}>
-    <Text>Profile Screen</Text>
-  </View>
-);
-
-const SettingsScreen = () => (
-  <View style={styles.center}>
-    <Text>Settings Screen</Text>
-  </View>
-);
-
-const NotificationsScreen = () => (
-  <View style={styles.center}>
-    <Text>Notifications Screen</Text>
-  </View>
-);
+import HomeStack from './HomeStack';
+import ProfileStack from './ProfileStack';
+import ReportStack from './ReportStack';
+import OrderStack from './OrderStack';
 
 const Tab = createBottomTabNavigator();
-
-const CustomTabBarButton = ({ children, onPress }) => (
-  <TouchableOpacity
-    style={styles.customButtonContainer}
-    onPress={onPress}
-    activeOpacity={0.8}
-  >
-    <View style={styles.customButton}>
-      {children}
-    </View>
-  </TouchableOpacity>
-);
 
 export default function BottomTabNavigator() {
   const { colors } = useTheme();
@@ -45,7 +18,8 @@ export default function BottomTabNavigator() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: false,
+        tabBarShowLabel: true, // 👈 show title
+        tabBarLabelPosition: 'below-icon', // 👈 put label below icon
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.text,
         tabBarStyle: {
@@ -55,95 +29,85 @@ export default function BottomTabNavigator() {
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
         },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginBottom: 5, // adjust label distance from bottom
+        },
       }}
     >
+      {/* 🏠 Home */}
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeStack}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Icon name="home-outline" size={24} color={color} />
+          tabBarIcon: ({ focused, color }) => (
+            <View style={styles.iconContainer}>
+              {focused && <View style={[styles.activeBar, { backgroundColor: colors.primary }]} />}
+              <Icon name="home-outline" size={24} color={color} />
+            </View>
           ),
+          tabBarLabel: 'Home',
         }}
       />
 
+      {/* 👤 Profile */}
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileStack}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Icon name="person-outline" size={24} color={color} />
+          tabBarIcon: ({ focused, color }) => (
+            <View style={styles.iconContainer}>
+              {focused && <View style={[styles.activeBar, { backgroundColor: colors.primary }]} />}
+              <Icon name="person-outline" size={24} color={color} />
+            </View>
           ),
+          tabBarLabel: 'Profile',
         }}
       />
 
+      {/* 📊 Report */}
       <Tab.Screen
-        name="Settings"
-        component={LoginScreen}
+        name="Report"
+        component={ReportStack}
         options={{
-          tabBarIcon: ({ focused }) => (
-            <Icon name="add" size={30} color="#fff" />
+          tabBarIcon: ({ focused, color }) => (
+            <View style={styles.iconContainer}>
+              {focused && <View style={[styles.activeBar, { backgroundColor: colors.primary }]} />}
+              <Icon name="bar-chart-outline" size={24} color={color} />
+            </View>
           ),
-          tabBarButton: (props) => <CustomTabBarButton {...props} />,
+          tabBarLabel: 'Report',
         }}
       />
 
+      {/* 📦 Order */}
       <Tab.Screen
-        name="Notifications"
-        component={NotificationsScreen}
+        name="Order"
+        component={OrderStack}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Icon name="notifications-outline" size={24} color={color} />
+          tabBarIcon: ({ focused, color }) => (
+            <View style={styles.iconContainer}>
+              {focused && <View style={[styles.activeBar, { backgroundColor: colors.primary }]} />}
+              <Icon name="cube-outline" size={24} color={color} />
+            </View>
           ),
+          tabBarLabel: 'Orders',
         }}
       />
-
-      {/* <Tab.Screen
-        name="More"
-        component={() => null}
-        options={{
-          tabBarIcon: ({ color }) => (
-            <Icon name="menu-outline" size={24} color={color} />
-          ),
-          tabBarButton: (props) => (
-            <TouchableOpacity {...props}>
-              <Icon name="menu-outline" size={24} color={colors.text} />
-            </TouchableOpacity>
-          ),
-        }}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            e.preventDefault();
-            navigation.openDrawer();
-          },
-        })}
-      /> */}
     </Tab.Navigator>
   );
 }
 
 const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: 'center',
+  iconContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  customButtonContainer: {
-    top: -25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  customButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#007AFF', // You can use colors.primary if needed
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 5,
-    elevation: 5,
+  activeBar: {
+    position: 'absolute',
+    top: -8,              // 👈 place bar at top of tab
+    width: 25,
+    height: 3,
+    borderRadius: 2,
   },
 });
