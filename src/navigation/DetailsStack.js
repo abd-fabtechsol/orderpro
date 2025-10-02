@@ -8,6 +8,7 @@ import SettingsScreen from '../screens/profile/SettingsScreen';
 import PrivacyPolicyScreen from '../screens/profile/PrivacyPolicyScreen';
 import HelpCenterScreen from '../screens/profile/HelpCenterScreen';
 import TermsServices from '../screens/profile/TermsServices';
+import OrderViewScreen from '../screens/order/OrderViewScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,7 @@ const DetailsStack = () => {
       <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
       <Stack.Screen name="term" component={TermsServices} />
+      <Stack.Screen name="invoice" component={OrderViewScreen} />
     </Stack.Navigator>
   );
 };

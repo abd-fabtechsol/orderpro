@@ -46,5 +46,5 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
   },
-  label: { fontSize: 16,  },
+  label: { fontSize: 16,fontWeight:"400"  },
 });

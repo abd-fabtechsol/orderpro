@@ -8,6 +8,7 @@ import HomeStack from './HomeStack';
 import ProfileStack from './ProfileStack';
 import ReportStack from './ReportStack';
 import OrderStack from './OrderStack';
+import ReportsScreen from '../screens/report/ReportsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -50,37 +51,7 @@ export default function BottomTabNavigator() {
         }}
       />
 
-      {/* 👤 Profile */}
-      <Tab.Screen
-        name="Profile"
-        component={ProfileStack}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <View style={styles.iconContainer}>
-              {focused && <View style={[styles.activeBar, { backgroundColor: colors.primary }]} />}
-              <Icon name="person-outline" size={24} color={color} />
-            </View>
-          ),
-          tabBarLabel: 'Profile',
-        }}
-      />
-
-      {/* 📊 Report */}
-      <Tab.Screen
-        name="Report"
-        component={ReportStack}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <View style={styles.iconContainer}>
-              {focused && <View style={[styles.activeBar, { backgroundColor: colors.primary }]} />}
-              <Icon name="bar-chart-outline" size={24} color={color} />
-            </View>
-          ),
-          tabBarLabel: 'Report',
-        }}
-      />
-
-      {/* 📦 Order */}
+      
       <Tab.Screen
         name="Order"
         component={OrderStack}
@@ -92,6 +63,36 @@ export default function BottomTabNavigator() {
             </View>
           ),
           tabBarLabel: 'Orders',
+        }}
+      />
+
+      {/* 📊 Report */}
+      <Tab.Screen
+        name="Report"
+        component={ReportsScreen}
+        options={{
+          tabBarIcon: ({ focused, color }) => (
+            <View style={styles.iconContainer}>
+              {focused && <View style={[styles.activeBar, { backgroundColor: colors.primary }]} />}
+              <Icon name="bar-chart-outline" size={24} color={color} />
+            </View>
+          ),
+          tabBarLabel: 'Report',
+        }}
+      />
+
+      
+       <Tab.Screen
+        name="Profile"
+        component={ProfileStack}
+        options={{
+          tabBarIcon: ({ focused, color }) => (
+            <View style={styles.iconContainer}>
+              {focused && <View style={[styles.activeBar, { backgroundColor: colors.primary }]} />}
+              <Icon name="person-outline" size={24} color={color} />
+            </View>
+          ),
+          tabBarLabel: 'Setting',
         }}
       />
     </Tab.Navigator>

@@ -5,11 +5,48 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  Image,
 } from 'react-native';
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
-
+import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../context/ThemeContext';
+import pic from "../../../assets/splash-icon.png";
+import { width } from '../../constants/dimension';
+import ReportsHeader from '../../components/ReportsHeader';
 const sampleOrders = [
+  {
+    id: '1',
+    vendor: 'Daily Fresh',
+    orderNo: '#1243',
+    date: '15 - 08 - 2025',
+    total: 100.5,
+    status: 'Pending',
+  },
+  {
+    id: '2',
+    vendor: 'Daily Fresh',
+    orderNo: '#1244',
+    date: '15 - 08 - 2025',
+    total: 100.5,
+    status: 'Delivered',
+  },
+  {
+    id: '1',
+    vendor: 'Daily Fresh',
+    orderNo: '#1243',
+    date: '15 - 08 - 2025',
+    total: 100.5,
+    status: 'Pending',
+  },
+  {
+    id: '2',
+    vendor: 'Daily Fresh',
+    orderNo: '#1244',
+    date: '15 - 08 - 2025',
+    total: 100.5,
+    status: 'Delivered',
+  },
   {
     id: '1',
     vendor: 'Daily Fresh',
@@ -28,7 +65,9 @@ const sampleOrders = [
   },
 ];
 
-const Order = ({ navigation }) => {
+const Order = () => {
+  const {colors}=useTheme()
+  const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('Active');
   const [period, setPeriod] = useState('Today');
 
@@ -37,8 +76,11 @@ const Order = ({ navigation }) => {
   );
 
   const renderOrder = ({ item }) => (
-    <View style={styles.card}>
+    <View style={[styles.card,{backgroundColor:colors.background,borderColor:colors.border}]}>
+      <View style={{flexDirection:"row",gap:10}}>
+<Image source={pic} style={{width: 20, height: 20}} resizeMode="contain" />
         <AppText style={styles.vendor}>{item.vendor}</AppText>
+      </View>
       <View style={styles.cardHeader}>
         <AppText style={styles.date}>{`Order: ${item.orderNo}`}</AppText>
         <AppText style={styles.date}>{`Order: ${item.date}`}</AppText>
@@ -50,10 +92,13 @@ const Order = ({ navigation }) => {
        
       </View>
       <View style={styles.statusWrapper}>
-        <AppText style={[styles.status, item.status === 'Pending' ? styles.pending : styles.delivered]}>
+        <AppText style={[styles.status, item.status === 'Pending' ? styles.pending : styles.delivered,{backgroundColor:colors.cardColor}]}>
           {item.status}
         </AppText>
-         <TouchableOpacity onPress={() => navigation.navigate('OrderView', { order: item })}>
+         <TouchableOpacity onPress={() => navigation.navigate('ProfileDetails', {  // tab or parent route
+  screen: 'invoice',           // child screen
+  params: { order: item },
+})}>
           <AppText style={styles.invoiceLink}>View Invoice</AppText>
         </TouchableOpacity>
       </View>
@@ -63,13 +108,14 @@ const Order = ({ navigation }) => {
   return (
     <AppView style={styles.container}>
       {/* Tabs */}
-      <View style={styles.tabs}>
+      <ReportsHeader/>
+      <View style={[styles.tabs,{backgroundColor:colors.cardColor}]}>
         {['Active', 'History'].map(tab => (
           <TouchableOpacity
             key={tab}
             onPress={() => setActiveTab(tab)}
-            style={[styles.tab, activeTab === tab && styles.activeTab]}>
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+            style={[styles.tab, activeTab === tab && {backgroundColor:colors.background}]}>
+            <AppText style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</AppText>
           </TouchableOpacity>
         ))}
       </View>
@@ -80,7 +126,7 @@ const Order = ({ navigation }) => {
           <TouchableOpacity
             key={f}
             onPress={() => setPeriod(f)}
-            style={[styles.filterBtn, period === f && styles.activeFilter]}>
+            style={[styles.filterBtn,{borderColor:colors.border}, period === f && styles.activeFilter]}>
             <AppText style={[styles.filterText, period === f && styles.activeFilterText]}>{f}</AppText>
           </TouchableOpacity>
         ))}
@@ -101,31 +147,31 @@ const Order = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, },
 
-  tabs: { flexDirection: 'row', marginBottom: 12 },
-  tab: { flex: 1, padding: 10, alignItems: 'center', borderBottomWidth: 2, borderColor: '#ccc' },
+  tabs: { flexDirection: 'row', marginBottom: 12,borderRadius:10,padding:5 },
+  tab: { flex: 1, padding: 7, alignItems: 'center',borderRadius:10 },
   activeTab: { borderColor: '#1DBF72' },
   tabText: { fontSize: 16, color: '#888' },
-  activeTabText: { color: '#1DBF72', fontWeight: '600' },
+  activeTabText: { color: '#1DBF72', fontWeight: '500' },
 
   filters: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 16 },
-  filterBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, backgroundColor: '#f1f1f1' },
+  filterBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10,borderWidth:1  },
   activeFilter: { backgroundColor: '#1DBF72' },
-  filterText: { color: '#333', fontSize: 14 },
+  filterText: { fontSize: 14 },
   activeFilterText: { color: '#fff' },
 
-  card: { backgroundColor: '#fff', padding: 12, borderRadius: 10, marginBottom: 12, borderWidth: 0.5, borderColor: '#eee' },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  vendor: { fontSize: 16, fontWeight: '600' },
-  date: { fontSize: 13, color: '#888' },
+  card: {  padding: 12, borderRadius: 10, marginBottom: 12, borderWidth: 1,  },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 8 },
+  vendor: { fontSize: 18, fontWeight: '500' },
+  date: { fontSize: 14,fontWeight:"400", color: '#888' },
 
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  total: { fontSize: 14, fontWeight: '500' },
-  invoiceLink: { fontSize: 14,color: '#1DBF72', fontWeight: '500' },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',marginVertical: 10 },
+  total: { fontSize: 18, fontWeight: '500' },
+  invoiceLink: { fontSize: 14,fontWeight:"500",color: '#1DBF72', fontWeight: '500' },
 
-  statusWrapper: {flexDirection:"row", marginTop: 6, justifyContent:"space-between" },
-  status: { fontSize: 12, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  pending: { backgroundColor: '#FFE4B5', color: '#E6A500' },
-  delivered: { backgroundColor: '#DFF6E2', color: '#1DBF72' },
+  statusWrapper: {flexDirection:"row", marginTop: 6,alignItems:"center", justifyContent:"space-between" },
+  status: { fontSize: 14,fontWeight:"400", paddingHorizontal: 8, padding: 6, borderRadius: 8 },
+  pending: { color: '#E6A500' },
+  delivered: { color: '#1DBF72' },
 });
 
 export default Order

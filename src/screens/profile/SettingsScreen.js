@@ -50,6 +50,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
    
   },
-  text: { fontSize: 16 },
+  text: { fontSize: 16 ,fontWeight:"400"},
   delete: { marginTop: 20 },
 });

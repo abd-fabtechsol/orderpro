@@ -47,5 +47,5 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  updateText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  updateText: { color: '#fff', fontWeight: '400', fontSize: 18 },
 });

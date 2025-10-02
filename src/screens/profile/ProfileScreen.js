@@ -79,8 +79,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, },
   header: { alignItems: 'center', marginBottom: 30 },
   avatar: { width: 80, height: 80, borderRadius: 40, marginBottom: 10 },
-  name: { fontSize: 18, fontWeight: '600' },
-  phone: {  fontSize: 14 },
+  name: { fontSize: 20, fontWeight: '600' },
+  phone: {  fontSize: 16, fontWeight: '400',color:"#6B7280",marginTop:5 },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
