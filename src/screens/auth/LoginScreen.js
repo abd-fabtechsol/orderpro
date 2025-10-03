@@ -1,7 +1,9 @@
 import React, { useRef, useState } from "react";
 import { View, Image, TextInput, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
 import Swiper from "react-native-swiper";
-import pic from "../../../assets/splash-icon.png";
+import pic1 from "../../../assets/market.png";
+import pic from "../../../assets/order.png";
+import googleImage from "../../../assets/google.png";
 import { useTheme } from "../../context/ThemeContext";
 import AppView from "../../components/common/AppView";
 import ThemeSwitch from "../../components/common/ThemeSwitch";
@@ -17,7 +19,7 @@ const { width } = Dimensions.get("window");
 const slides = [
     {
         id: 1,
-        image: pic, // replace with your asset
+        image: pic1, // replace with your asset
         title: "All Your Suppliers, One Place",
         subtitle: "Add and manage suppliers in one place."
     },
@@ -100,7 +102,7 @@ const LoginScreen = () => {
 
 
             <AppButton onPress={() => navigation.navigate("otp")} title="Continue with phone" />
-            <AppButton image={pic} title="Continue with google" style={{ marginTop: 10, backgroundColor: "transparent", borderWidth: 2, borderColor: colors.border }} textStyle={{ color: colors.text }} />
+            <AppButton image={googleImage} title="Continue with google" style={{ marginTop: 10, backgroundColor: "transparent", borderWidth: 2, borderColor: colors.border }} textStyle={{ color: colors.text }} />
             <RbSheetComponet
                 ref={countryCodeSheetRef}
                 height={hp(70)}

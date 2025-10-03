@@ -6,6 +6,8 @@ import { useTheme } from '../../context/ThemeContext';
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
 import AppButton from '../../components/common/AppButton';
+import camra from "../../../assets/camra.png";
+import Imageprofile from "../../../assets/Image-profile.png";
 import { sizes } from '../../constants';
 import { hp, wp } from '../../constants/dimension';
 import RbSheetComponet from '../../components/common/RbSheetComponet';
@@ -48,11 +50,12 @@ const CompleteProfileScreen = () => {
       {/* Profile Image */}
       <View style={styles.profileImageContainer}>
         <Image
-          source={{ uri: "https://via.placeholder.com/100" }}
+          source={Imageprofile}
           style={styles.profileImage}
         />
-        <TouchableOpacity style={styles.cameraIcon}>
-          <Feather name="camera" size={18} color="#000" />
+        <TouchableOpacity >
+          {/* <Feather name="camera" size={18} color="#000" /> */}
+          <Image source={camra} style={[styles.cameraIcon,{width: 40, height: 40}]} resizeMode="contain" />
         </TouchableOpacity>
       </View>
 
@@ -152,7 +155,7 @@ const styles = StyleSheet.create({
   },
   cameraIcon: {
     position: "absolute",
-    bottom: 4,
+    bottom: -4,
     right: 4,
     backgroundColor: "#fff",
     borderRadius: 20,

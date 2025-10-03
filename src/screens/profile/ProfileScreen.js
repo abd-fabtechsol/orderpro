@@ -2,13 +2,24 @@ import React, { use } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import pic from "../../../assets/splash-icon.png";
+import profile from "../../../assets/profile.png";
+import profileDark from "../../../assets/profileDark.png";
+import notificationSet from "../../../assets/notificationSet.png";
+import notificationDark from "../../../assets/notificationDark.png";
+import inte from "../../../assets/inte.png";
+import inteDark from "../../../assets/inteDark.png";
+import sun from "../../../assets/sun.png";
+import sunDark from "../../../assets/sunDark.png";
+import setting from "../../../assets/settingDev.png";
+import settingDark from "../../../assets/settingDark.png";
+import logout from "../../../assets/logout.png";
 import AppView from '../../components/common/AppView';
 import ThemeSwitch from '../../components/common/ThemeSwitch';
 import { useTheme } from '../../context/ThemeContext';
 import AppText from '../../components/common/AppText';
 import { fonts } from '../../constants';
 const ProfileScreen = ({ navigation }) => {
-  const {colors}=useTheme();
+  const {colors,isDarkMode}=useTheme();
 
   return (
     <AppView style={styles.container}>
@@ -28,7 +39,10 @@ const ProfileScreen = ({ navigation }) => {
         style={[styles.item,{borderWidth:1,borderColor:colors.border}]}
         onPress={() => navigation.navigate('ProfileDetails',{screen:'EditProfile'})}
       >
-        <Feather name="user" size={20} color="#555" />
+        {/* <Feather name="user" size={20} color="#555" /> */}
+        <Image source={isDarkMode?profileDark:profile} style={{width: 24, height: 24}} resizeMode="contain" />
+      
+       
         <AppText style={styles.itemText}>Manage profile</AppText>
       </TouchableOpacity>
 
@@ -36,7 +50,7 @@ const ProfileScreen = ({ navigation }) => {
         style={[styles.item,{borderWidth:1,borderColor:colors.border}]}
         onPress={() => navigation.navigate('ProfileDetails',{screen:'Notification'})}
       >
-        <Feather name="bell" size={20} color="#555" />
+         <Image source={isDarkMode?notificationDark:notificationSet} style={{width: 24, height: 24}} resizeMode="contain" />
         <AppText style={styles.itemText}>Notification</AppText>
       </TouchableOpacity>
 
@@ -44,13 +58,15 @@ const ProfileScreen = ({ navigation }) => {
          style={[styles.item,{borderWidth:1,borderColor:colors.border}]}
         onPress={() => navigation.navigate('ProfileDetails',{screen:'Integration'})}
       >
-        <Feather name="layers" size={20} color="#555" />
+         <Image source={isDarkMode?inteDark:inte} style={{width: 24, height: 24}} resizeMode="contain" />
+         
         <AppText style={styles.itemText}>Integration</AppText>
       </TouchableOpacity>
 
       <View   style={[styles.item1,{borderWidth:1,borderColor:colors.border}]}>
         <View style={{flexDirection:"row",gap:10}}>
-        <Feather name="settings" size={20} color="#555" />
+        <Image source={isDarkMode?sunDark:sun} style={{width: 24, height: 24}} resizeMode="contain" />
+        
           <AppText style={styles.label}>Theme</AppText>
         </View>
           <ThemeSwitch style={styles.switch} />
@@ -61,12 +77,13 @@ const ProfileScreen = ({ navigation }) => {
         style={[styles.item,{borderWidth:1,borderColor:colors.border}]}
         onPress={() => navigation.navigate('ProfileDetails',{screen:'Settings'})}
       >
-        <Feather name="settings" size={20} color="#555" />
+      <Image source={isDarkMode?settingDark:setting} style={{width: 24, height: 24}} resizeMode="contain" />
+     
         <AppText style={styles.itemText}>Settings</AppText>
       </TouchableOpacity>
 
       <TouchableOpacity style={[styles.item, { borderWidth:1,borderColor:colors.border,marginTop: 20 }]}>
-        <Feather name="log-out" size={20} color="red" />
+      <Image source={logout} style={{width: 24, height: 24}} resizeMode="contain" />
         <AppText style={[styles.itemText, { color: 'red' }]}>Logout</AppText>
       </TouchableOpacity>
     </AppView>

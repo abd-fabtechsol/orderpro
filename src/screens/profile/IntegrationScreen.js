@@ -1,11 +1,20 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import pic from "../../../assets/splash-icon.png";
+import pic from "../../../assets/WhatsApp.png";
+import gmail from "../../../assets/Gmail.png";
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
 import Header from '../../components/Header';
 import { hp, wp } from '../../constants/dimension';
-import { useTheme } from '../../context/ThemeContext';
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * IntegrationScreen is a component that displays the integration options of the app.
+ * It includes integration with WhatsApp and Gmail.
+ * The user can connect their WhatsApp and Gmail accounts to send orders and get invoices.
+ * @returns {JSX.Element}
+ */
+/*******  bfede7de-f127-446c-ad2c-e3f74bb608aa  *******/import { useTheme } from '../../context/ThemeContext';
+
 const IntegrationScreen = () => {
   const {colors}=useTheme()
   return (
@@ -20,13 +29,13 @@ const IntegrationScreen = () => {
             Integrate with WhatsApp to send order automatically to supplier.
           </AppText>
         </View>
-        <TouchableOpacity style={{backgroundColor:"#1E293B",marginTop:hp(1) ,justifyContent:"center",alignItems:"center",padding:10,borderRadius:15}}>
+        <TouchableOpacity style={{backgroundColor:"#1E283A",marginTop:hp(1) ,justifyContent:"center",alignItems:"center",padding:10,borderRadius:15}}>
         <AppText style={[styles.connected,{color:"#14B8A6"}]}>Connected</AppText>
         </TouchableOpacity>
       </View>
 
       <View style={[styles.card,{borderColor:colors.border}]}>
-        <Image source={pic} style={styles.icon} />
+        <Image source={gmail} style={styles.icon} resizeMode='contain'/>
         <View style={{marginTop:hp(1)}} >
           <AppText style={styles.title}>Gmail</AppText>
           <AppText style={styles.desc}>Connect with Gmail to send order and get invoices.</AppText>

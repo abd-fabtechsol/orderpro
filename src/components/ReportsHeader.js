@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import pic from "../../assets/splash-icon.png";
+import connect from "../../assets/connect.png";
+import Notification from "../../assets/Notification.png";
 import AppText from './common/AppText';
 const ReportsHeader = ({
  
@@ -15,18 +16,19 @@ const ReportsHeader = ({
       {/* Top Row: Logo + Title + Notification */}
       <View style={styles.topRow}>
         <View style={styles.logoRow}>
-        <Image source={pic}  style={styles.logo}/>
+        <Image source={connect}  style={styles.logo}/>
          
           <AppText style={styles.title}>OrderPro</AppText>
         </View>
 
         <TouchableOpacity style={styles.bellContainer} onPress={onNotificationPress}>
-          <Icon name="notifications-outline" size={24} color="#fff" />
-          {notificationCount > 0 && (
+        <Image source={Notification}  style={{width: 24, height: 24}} resizeMode='contain'/>
+          {/* <Icon name="notifications-outline" size={24} color="#fff" /> */}
+          {/* {notificationCount > 0 && ( */}
             <View style={styles.badge}>
               <AppText style={styles.badgeText}>{notificationCount}</AppText>
             </View>
-          )}
+          {/* )} */}
         </TouchableOpacity>
       </View>
 
@@ -54,8 +56,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 32,
-    height: 32,
+    width: 38,
+    height: 38,
     marginRight: 8,
   },
   title: {
@@ -65,11 +67,17 @@ const styles = StyleSheet.create({
   },
   bellContainer: {
     position: 'relative',
+    backgroundColor:"#F9FAFC",
+    width:38,
+    height:38,
+    justifyContent:"center",
+    alignItems:"center",
+    borderRadius:20
   },
   badge: {
     position: 'absolute',
-    top: -4,
-    right: -6,
+    top: -2,
+    right: -3,
     backgroundColor: '#FF3B30',
     borderRadius: 8,
     paddingHorizontal: 4,
@@ -78,6 +86,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 10,
     fontWeight: 'bold',
+    color:'#fff',
   },
 
 });

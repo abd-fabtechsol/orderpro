@@ -11,7 +11,7 @@ import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext';
-import pic from "../../../assets/splash-icon.png";
+import pic from "../../../assets/dp.png";
 import { width } from '../../constants/dimension';
 import ReportsHeader from '../../components/ReportsHeader';
 const sampleOrders = [
@@ -77,8 +77,8 @@ const Order = () => {
 
   const renderOrder = ({ item }) => (
     <View style={[styles.card,{backgroundColor:colors.background,borderColor:colors.border}]}>
-      <View style={{flexDirection:"row",gap:10}}>
-<Image source={pic} style={{width: 20, height: 20}} resizeMode="contain" />
+      <View style={{flexDirection:"row",gap:10,alignItems:"center"}}>
+<Image source={pic} style={{width: 38, height: 38}} resizeMode="contain" />
         <AppText style={styles.vendor}>{item.vendor}</AppText>
       </View>
       <View style={styles.cardHeader}>

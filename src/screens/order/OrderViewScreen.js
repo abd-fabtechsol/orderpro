@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image } from 'react-native';
 import AppView from '../../components/common/AppView';
 import Header from '../../components/Header';
 import { hp, wp } from '../../constants/dimension';
 import AppText from '../../components/common/AppText';
-
+import pic from "../../../assets/dp.png";
 const products = [
   { id: '1', name: 'Milk', qty: '50L', price: '$100' },
   { id: '2', name: 'Break', qty: '50pc', price: '$75' },
@@ -18,15 +18,18 @@ const OrderViewScreen = ({ route }) => {
       {/* Vendor Info */}
       <Header title="Order View" />
       <View style={styles.header}>
+        <View style={{flexDirection:"row",gap:10,alignItems:"center"}}>
+      <Image source={pic} style={{width: 38, height: 38}} resizeMode="contain" />
         <AppText style={styles.vendor}>{order.vendor}</AppText>
+        </View>
         <AppText style={[styles.status, order.status === 'Pending' ? styles.pending : styles.delivered]}>
           {order.status}
         </AppText>
       </View>
 <View style={{flexDirection:"row",justifyContent:"space-between",alignItems:"center"}}>
 
-      <Text style={styles.subText}>{`Order ${order.orderNo}`}</Text>
-      <Text style={styles.subText}>{`Order Date: ${order.date}`}</Text>
+      <AppText style={styles.subText}>{`Order ${order.orderNo}`}</AppText>
+      <AppText style={styles.subText}>{`Order Date: ${order.date}`}</AppText>
 </View>
 
       {/* Product List */}
