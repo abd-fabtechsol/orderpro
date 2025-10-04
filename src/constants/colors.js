@@ -10,6 +10,7 @@ const light = {
     buttonColor:"#1DBF72",
     card: '#ffffff',
     cardColor: '#E2E8F0',
+    search:"#F8FAFC"
   };
   
   const dark = {
@@ -24,6 +25,7 @@ const light = {
     buttonColor:"#1DBF72",
     card: '#121212',
     cardColor: '#1E293B',
+    search:"#1E293B"
   };
   
   export default { light, dark };

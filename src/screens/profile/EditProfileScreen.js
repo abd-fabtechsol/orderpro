@@ -5,6 +5,9 @@ import AppView from '../../components/common/AppView';
 import Header from '../../components/Header';
 import AppInput from '../../components/common/AppInput';
 import { hp, wp } from '../../constants/dimension';
+import io from "../../../assets/io.png"
+import phone from "../../../assets/phone.png"
+import email from "../../../assets/email.png"
 
 const EditProfileScreen = () => {
   return (
@@ -16,9 +19,9 @@ const EditProfileScreen = () => {
       </View>
 
 
-      <AppInput  placeholder="Abdomarouan" />
-      <AppInput  placeholder="+1 (715) 644-5125" />
-      <AppInput  placeholder="Enter your email" />
+      <AppInput icon={io} placeholder="Abdomarouan" />
+      <AppInput icon={phone} placeholder="+1 (715) 644-5125" />
+      <AppInput icon={email} placeholder="Enter your email" />
       </View>
       <TouchableOpacity style={styles.updateBtn}>
         <Text style={styles.updateText}>Update profile</Text>

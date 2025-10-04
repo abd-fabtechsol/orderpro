@@ -17,6 +17,7 @@ import ReportStack from './ReportStack';
 import OrderStack from './OrderStack';
 import ReportsScreen from '../screens/report/ReportsScreen';
 import { Image } from 'react-native';
+import Home from '../screens/home/Home';
 
 const Tab = createBottomTabNavigator();
 
@@ -46,7 +47,7 @@ export default function BottomTabNavigator() {
       {/* 🏠 Home */}
       <Tab.Screen
         name="Home"
-        component={HomeStack}
+        component={Home}
         options={{
           tabBarIcon: ({ focused, color }) => (
             <View style={styles.iconContainer}>
