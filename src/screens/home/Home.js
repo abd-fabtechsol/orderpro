@@ -22,6 +22,7 @@ import RbSheetComponet from "../../components/common/RbSheetComponet";
 import AddSupplier from "../../components/AddSupplier";
 import { hp } from "../../constants/dimension";
 import { useNavigation } from "@react-navigation/native";
+import AddProduct from "../../components/AddProduct";
 
 
 
@@ -29,6 +30,7 @@ export default function Home( ) {
   const navigation=useNavigation()
   const [search, setSearch] = useState("");
   const countryCodeSheetRef = useRef();
+  const productSheetRef = useRef();
   const [menuVisible, setMenuVisible] = useState(false)
 const{colors}=useTheme()
   const suppliers = [
@@ -150,6 +152,7 @@ const{colors}=useTheme()
     // navigation.navigate("AddSupplier");
   }}
   onAddProduct={() => {
+    productSheetRef?.current?.open()
     setMenuVisible(false);
     // navigation.navigate("AddProduct");
   }}
@@ -161,6 +164,14 @@ const{colors}=useTheme()
                 bgColor={colors.background}
                 children={
                   <AddSupplier/>
+                }
+                />
+<RbSheetComponet
+                ref={productSheetRef}
+                height={hp(70)}
+                bgColor={colors.background}
+                children={
+                  <AddProduct/>
                 }
                 />
     </AppView>
