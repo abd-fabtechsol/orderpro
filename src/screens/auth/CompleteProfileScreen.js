@@ -13,8 +13,13 @@ import { hp, wp } from '../../constants/dimension';
 import RbSheetComponet from '../../components/common/RbSheetComponet';
 import CountrySelectionSheet from '../../components/BottomSheet/CountrySelectionSheet';
 import AppInput from '../../components/common/AppInput';
+import io from "../../../assets/io.png"
+import phone from "../../../assets/phone.png"
+import email from "../../../assets/email.png"
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Button } from 'react-native';
 
-const CompleteProfileScreen = () => {
+const CompleteProfileScreen = ({navigation}) => {
   const { colors } = useTheme();
   const countryCodeSheetRef = useRef();
   const [countryCodeData, setCountryCodeData] = useState(countryCodes);
@@ -30,6 +35,7 @@ const CompleteProfileScreen = () => {
       setCountry(item);
       countryCodeSheetRef?.current?.close();
   };
+  
   const handleSearch = text => {
       const filteredData = countryCodes.filter(item => {
           return item.name.toLowerCase().includes(text.toLowerCase());
@@ -42,11 +48,11 @@ const CompleteProfileScreen = () => {
       <View style={styles.header}>
         <View/>
         <AppText style={[styles.headerTitle, { color: colors.text }]}>Complete Profile</AppText>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => {()=>console.log("first")}}>
           <AppText style={styles.skipText}>Skip</AppText>
         </TouchableOpacity>
       </View>
-
+{/* <Button title='sada' onPress={handleFinish}/> */}
       {/* Profile Image */}
       <View style={styles.profileImageContainer}>
         <Image
@@ -63,9 +69,10 @@ const CompleteProfileScreen = () => {
       <View style={styles.form}>
         
           <AppInput
+          icon={io}
             placeholder="Business or personal name"
             placeholderTextColor="#9CA3AF"
-            // style={styles.input}
+           
           />
         
 
@@ -91,15 +98,16 @@ const CompleteProfileScreen = () => {
             </View>
 
             <AppInput
+            icon={email}
             placeholder="Business or personal name"
             placeholderTextColor="#9CA3AF"
-            // style={styles.input}
+           
           />
       </View>
 
       {/* Button */}
       <View style={styles.footer}>
-        <AppButton title={'Finish'} onPress={() => {}} />
+        <AppButton title={'Finish'} onPress={() => {navigation.navigate('MainTabs'); }} />
       </View>
       <RbSheetComponet
                 ref={countryCodeSheetRef}

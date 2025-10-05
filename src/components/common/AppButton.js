@@ -23,9 +23,9 @@ const AppButton = ({ title, onPress, style, textStyle ,image}) => {
         },
         style,
       ]}
-      onPress={onPress}
+      onPress={onPress} 
     >
-      {image && <Image source={image} style={{width: 25, height: 25}} resizeMode="contain" />}
+      {image && <Image source={image} style={{width: 23, height: 23}} resizeMode="contain" />}
       <Text
         style={[
           {

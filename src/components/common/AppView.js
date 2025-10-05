@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
-    marginBottom:18,
+    marginBottom:0,
   },
 });
 

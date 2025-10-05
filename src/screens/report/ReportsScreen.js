@@ -43,12 +43,12 @@ const ReportsScreen = () => {
     backgroundGradientFrom: colors.background,
     backgroundGradientTo: colors.background,
     decimalPlaces: 0,
-    color: (opacity = 1) => `${colors.buttonColor}${Math.floor(opacity * 255).toString(16)}`,
+    color: (opacity = 1) => `green`,
     labelColor: (opacity = 1) => colors.text,
     propsForBackgroundLines: {
       stroke: colors.border,
     },
-    barPercentage: 0.5,
+    barPercentage: 0.3,
   };
 
   return (
@@ -140,8 +140,10 @@ export default ReportsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
+
   },
-  content: { padding: 16 },
+  content: { padding: 0 },
   filters: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 16 },
   filterBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1 },
   filterText: { fontSize: 14 },

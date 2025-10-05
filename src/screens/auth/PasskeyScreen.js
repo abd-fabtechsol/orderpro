@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import pic from "../../../assets/security.png";
 import finger from "../../../assets/finger.png";
+import shieldw from "../../../assets/shieldw.png";
+import fingerw from "../../../assets/fingerw.png";
 import shield from "../../../assets/shield-tick.png";
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
@@ -12,7 +14,7 @@ import { sizes } from '../../constants';
 import { hp, wp } from '../../constants/dimension';
 import { useNavigation } from '@react-navigation/native';
 const PasskeyScreen = () => {
-    const {colors}=useTheme()
+    const {colors,isDarkMode}=useTheme()
     const navigation=useNavigation()
   return (
     <AppView style={styles.container}>
@@ -29,7 +31,7 @@ const PasskeyScreen = () => {
       />
 
       <View style={styles.infoRow}>
-      <Image source={finger} style={{width: 20, height: 20}} resizeMode="contain" />
+      <Image source={isDarkMode?fingerw:finger} style={{width: 20, height: 20}} resizeMode="contain" />
         <AppText style={[styles.infoText,{color:colors.text}]}>
           Sign in with fingerprint, face, PIN or Pattern. We don’t collect any of this info.
         </AppText>
@@ -37,7 +39,7 @@ const PasskeyScreen = () => {
 
       <View style={styles.infoRow}>
         {/* <Feather name="shield" size={20} color="#000" /> */}
-        <Image source={shield} style={{width: 20, height: 20}} resizeMode="contain" />
+        <Image source={isDarkMode?shieldw:shield} style={{width: 20, height: 20}} resizeMode="contain" />
         <AppText style={[styles.infoText,{color:colors.text}]}>
           Passkey is more secure, stored only on your device account.
         </AppText>

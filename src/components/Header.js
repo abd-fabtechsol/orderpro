@@ -16,7 +16,7 @@ const Header = ({title}) => {
         <TouchableOpacity onPress={handleGoBack}>
         <Image source={isDarkMode?leftLight:pic} style={{width: 25, height: 25}} />
     </TouchableOpacity>
-      <AppText style={{fontSize:18,fontWeight:"medium"}} >{title}</AppText>
+      <AppText style={{fontSize:18,fontWeight:"500"}} >{title}</AppText>
       <View/>
     </View>
   )

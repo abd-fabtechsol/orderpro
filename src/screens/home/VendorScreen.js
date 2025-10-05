@@ -8,6 +8,8 @@ import {
     TouchableOpacity,
     FlatList,
     TextInput,
+    TouchableWithoutFeedback,
+    Pressable,
 } from 'react-native';
 import { moderateScale } from 'react-native-size-matters';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +21,7 @@ import { useTheme } from '../../context/ThemeContext';
 import AppText from '../../components/common/AppText';
 import { hp, wp } from '../../constants/dimension';
 import vertical from "../../../assets/vertical.png"
+import morevertical from "../../../assets/morevertical.png"
 import Plus from "../../../assets/Plus.png";
 import boxb from "../../../assets/boxb.png";
 import boxw from "../../../assets/boxw.png";
@@ -27,6 +30,9 @@ import CardOrder from '../order/CardOrder';
 import RbSheetComponet from '../../components/common/RbSheetComponet';
 import AddSupplier from '../../components/AddSupplier';
 import AddProduct from '../../components/AddProduct';
+import { useNavigation } from '@react-navigation/native';
+import ContextMenu from '../../components/ContextMenu';
+
 
 const vendorData = {
     name: 'DailyFresh',
@@ -86,7 +92,7 @@ const sampleOrders = [
         status: 'Delivered',
     },
     {
-        id: '1',
+        id: '3',
         vendor: 'Daily Fresh',
         orderNo: '#1243',
         date: '15 - 08 - 2025',
@@ -94,7 +100,7 @@ const sampleOrders = [
         status: 'Pending',
     },
     {
-        id: '2',
+        id: '4',
         vendor: 'Daily Fresh',
         orderNo: '#1244',
         date: '15 - 08 - 2025',
@@ -102,7 +108,7 @@ const sampleOrders = [
         status: 'Delivered',
     },
     {
-        id: '1',
+        id: '5',
         vendor: 'Daily Fresh',
         orderNo: '#1243',
         date: '15 - 08 - 2025',
@@ -110,7 +116,7 @@ const sampleOrders = [
         status: 'Pending',
     },
     {
-        id: '2',
+        id: '6',
         vendor: 'Daily Fresh',
         orderNo: '#1244',
         date: '15 - 08 - 2025',
@@ -123,11 +129,13 @@ const VendorScreen = () => {
     const countryCodeSheetRef = useRef();
     const productSheetRef = useRef();
     const [menuVisible, setMenuVisible] = useState(false)
-    const { colors,isDarkMode } = useTheme()
+    const { colors, isDarkMode } = useTheme()
     const [activeTab, setActiveTab] = useState('Product');
     const [products, setProducts] = useState(initialProducts);
+    const [isMenuVisible1, setMenuVisible1] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
     const [noItem, setNoItem] = useState(false)
-
+    const navigation = useNavigation()
     const renderProduct = ({ item }) => (
         <View style={[styles.productCard, { borderColor: colors.border }]}>
 
@@ -140,8 +148,11 @@ const VendorScreen = () => {
                             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", }}>
 
                                 <AppText style={styles.productName}>{item.name}</AppText>
-                                <TouchableOpacity>
-                                    <Image source={vertical} style={{ width: 20, height: 20 }} resizeMode="contain" />
+                                <TouchableOpacity onPress={(event) => {
+          setMenuPosition({ x: event.nativeEvent.pageX, y: event.nativeEvent.pageY });
+          setMenuVisible1(item.id);
+        }}>
+                                    <Image source={isDarkMode?morevertical:vertical} style={{ width: 20, height: 20 }} resizeMode="contain" />
                                     {/* <Ionicons name="ellipsis-vertical" size={20} color="gray" /> */}
                                 </TouchableOpacity>
                             </View>
@@ -165,16 +176,25 @@ const VendorScreen = () => {
           </TouchableOpacity> */}
                 </View>
             </View>
+            {isMenuVisible1==item?.id && (
+        <ContextMenu
+          style={{ top: 30, right: 0 }}
+          onClose={() => setMenuVisible1(false)}
+        />
+      )}
         </View>
     );
-
+console.log(isMenuVisible1,"ddddd")
     return (
+        // <Pressable style={{ flex: 1 }} onPress={() => setMenuVisible1(null)}>
+        //         <>
         <AppView style={styles.container}>
             {/* Header */}
+           
             <Header />
 
             {/* Vendor Info */}
-            <View style={[styles.vendorInfo,{flex:1}]}>
+            <View style={[styles.vendorInfo, { flex: 1 }]}>
                 <Image source={{ uri: vendorData.image }} style={styles.vendorImage} />
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
 
@@ -191,59 +211,59 @@ const VendorScreen = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={{flex:5,justifyContent:"center"}}>
-{noItem?<>
-<View style={{alignItems:"center",}}>
-    <Image source={isDarkMode?boxw:boxb} style={{ width: 40, height: 40 }} resizeMode="contain" />
-</View>
-    <AppText style={styles.noItem}>No Item Found</AppText>
-    <AppText style={styles.noItemDesc}>You don't have active item from this supplier. Add your first item</AppText>
-</>:
-            <>
-                <View style={[styles.tabs, { backgroundColor: colors.cardColor }]}>
-                    {['Product', 'Orders'].map(tab => (
-                        <TouchableOpacity
-                            key={tab}
-                            onPress={() => setActiveTab(tab)}
-                            style={[styles.tab, activeTab === tab && { backgroundColor: colors.background }]}>
-                            <AppText style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</AppText>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-                {activeTab == "Product" ? <>
-                    {/* Products */}
-                    <AppText style={{ fontWeight: "600", margin: 10 }}>Product</AppText>
-                    <FlatList
-                        data={products}
-                        keyExtractor={(item) => item.id}
-                        renderItem={renderProduct}
-                        contentContainerStyle={{ paddingBottom: 80 }}
-                    />
+            <View style={{ flex: 5, justifyContent: "center" }}>
+                {noItem ? <>
+                    <View style={{ alignItems: "center", }}>
+                        <Image source={isDarkMode ? boxw : boxb} style={{ width: 40, height: 40 }} resizeMode="contain" />
+                    </View>
+                    <AppText style={styles.noItem}>No Item Found</AppText>
+                    <AppText style={styles.noItemDesc}>You don't have active item from this supplier. Add your first item</AppText>
                 </> :
                     <>
-                        {/* <CardOrder colors={colors} item={sampleOrders[0]}/> */}
-                        <AppText style={{ fontWeight: "600", margin: 10 }}>Active Orders</AppText>
-                        <FlatList
-                            data={sampleOrders}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => <CardOrder colors={colors} item={item} />}
-                            contentContainerStyle={{ paddingBottom: 80 }}
-                        />
-                    </>
-                }
-            </>}
+                        <View style={[styles.tabs, { backgroundColor: colors.cardColor }]}>
+                            {['Product', 'Orders'].map(tab => (
+                                <TouchableOpacity
+                                    key={tab}
+                                    onPress={() => setActiveTab(tab)}
+                                    style={[styles.tab, activeTab === tab && { backgroundColor: colors.background }]}>
+                                    <AppText style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</AppText>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                        {activeTab == "Product" ? <>
+                            {/* Products */}
+                            <AppText style={{ fontWeight: "600", margin: 10 }}>Product</AppText>
+                            <FlatList
+                                data={products}
+                                keyExtractor={(item) => item.id}
+                                renderItem={renderProduct}
+                                contentContainerStyle={{ paddingBottom: 80 }}
+                            />
+                        </> :
+                            <>
+                                {/* <CardOrder colors={colors} item={sampleOrders[0]}/> */}
+                                <AppText style={{ fontWeight: "600", margin: 10 }}>Active Orders</AppText>
+                                <FlatList
+                                    data={sampleOrders}
+                                    keyExtractor={(item) => item.id}
+                                    renderItem={({ item }) => <CardOrder colors={colors} item={item} />}
+                                    contentContainerStyle={{ paddingBottom: 80 }}
+                                />
+                            </>
+                        }
+                    </>}
             </View>
 
             {/* Continue Button */}
-            <View style={{ flex: 0.5, justifyContent: "flex-end" }}>
+            <View style={{ flex: 0.5, justifyContent: "flex-end", }}>
 
-                <AppButton title="Continue" onPress={()=>setNoItem(true)} />
+                <AppButton title="Continue" onPress={() => { noItem ? navigation.navigate('ProfileDetails', { screen: 'overview' }) : setNoItem(true) }} />
             </View>
             <TouchableOpacity style={styles.fab} onPress={() => setMenuVisible(true)}>
-                {/* <Ionicons name="add" size={28} color="#fff" /> */}
+
                 <Image source={Plus} style={{ width: 24, height: 24 }} resizeMode="contain" />
             </TouchableOpacity>
-
+           
             <FloatingActionMenu
                 visible={menuVisible}
                 onClose={() => setMenuVisible(false)}
@@ -264,18 +284,21 @@ const VendorScreen = () => {
                 height={hp(70)}
                 bgColor={colors.background}
                 children={
-                  <AddSupplier/>
+                    <AddSupplier />
                 }
-                />
-                <RbSheetComponet
+            />
+            <RbSheetComponet
                 ref={productSheetRef}
                 height={hp(70)}
                 bgColor={colors.background}
                 children={
-                  <AddProduct/>
+                    <AddProduct />
                 }
-                />
+                
+            />
         </AppView>
+            // </>
+            //  </Pressable>
     );
 };
 
@@ -319,8 +342,8 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
-    noItem: { fontSize: 16, marginTop: 20 ,fontWeight:"500",textAlign: 'center',},
-  noItemDesc: { fontSize: 16,color: '#888', textAlign: 'center', marginTop: 5 },
+    noItem: { fontSize: 16, marginTop: 20, fontWeight: "500", textAlign: 'center', },
+    noItemDesc: { fontSize: 16, color: '#888', textAlign: 'center', marginTop: 5 },
 });
 
 export default VendorScreen;

@@ -22,6 +22,18 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "28258ca2-0e2a-4ec7-b141-d428015e0d29"
+      }
+    },
+    "owner": "abdulrehman030",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/28258ca2-0e2a-4ec7-b141-d428015e0d29"
+    }
   }
 }

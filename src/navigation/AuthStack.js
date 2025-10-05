@@ -4,6 +4,8 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import VerifyOTPScreen from '../screens/auth/VerifyOTPScreen';
 import PasskeyScreen from '../screens/auth/PasskeyScreen';
 import CompleteProfileScreen from '../screens/auth/CompleteProfileScreen';
+import BottomTabNavigator from './BottomTabNavigator';
+import DetailsStack from './DetailsStack';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +21,8 @@ const AuthStack = () => {
       <Stack.Screen name="otp" component={VerifyOTPScreen} />
       <Stack.Screen name="PasskeyScreen" component={PasskeyScreen} />
       <Stack.Screen name="profile" component={CompleteProfileScreen} />
+      <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
+      <Stack.Screen name="ProfileDetails" component={DetailsStack} />
     </Stack.Navigator>
   );
 };

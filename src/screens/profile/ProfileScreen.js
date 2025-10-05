@@ -9,6 +9,7 @@ import notificationDark from "../../../assets/notificationDark.png";
 import inte from "../../../assets/inte.png";
 import inteDark from "../../../assets/inteDark.png";
 import sun from "../../../assets/sun.png";
+import qw from "../../../assets/qw.png";
 import sunDark from "../../../assets/sunDark.png";
 import setting from "../../../assets/settingDev.png";
 import settingDark from "../../../assets/settingDark.png";
@@ -27,7 +28,7 @@ const ProfileScreen = ({ navigation }) => {
       <ThemeSwitch style={styles.switch} />
       <View style={styles.header}>
         <Image
-          source={pic}
+          source={qw}
           style={styles.avatar}
         />
         <AppText style={styles.name}>Abdomarouan</AppText>

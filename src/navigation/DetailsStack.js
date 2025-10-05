@@ -10,6 +10,8 @@ import HelpCenterScreen from '../screens/profile/HelpCenterScreen';
 import TermsServices from '../screens/profile/TermsServices';
 import OrderViewScreen from '../screens/order/OrderViewScreen';
 import VendorScreen from '../screens/home/VendorScreen';
+import OrderOverview from '../screens/home/OrderOverview';
+import InvoiceScreen from '../screens/home/InvoiceScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +31,8 @@ const DetailsStack = () => {
       <Stack.Screen name="term" component={TermsServices} />
       <Stack.Screen name="invoice" component={OrderViewScreen} />
       <Stack.Screen name="vendor" component={VendorScreen} />
+      <Stack.Screen name="overview" component={OrderOverview} />
+      <Stack.Screen name="InvoiceScreen" component={InvoiceScreen} />
     </Stack.Navigator>
   );
 };

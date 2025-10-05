@@ -7,7 +7,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import DetailsStack from './DetailsStack'
 
 const MainNavigation = () => {
-    const token=true
+    const token=false
     const RootStack = createNativeStackNavigator();
   return (
     <>
@@ -18,10 +18,9 @@ const MainNavigation = () => {
         headerShown: false,
       }}
     >
-      {/* Main tabs */}
+     
       <RootStack.Screen name="MainTabs" component={BottomTabNavigator} />
 
-      {/* Screens without tabs */}
       <RootStack.Screen name="ProfileDetails" component={DetailsStack} />
     </RootStack.Navigator>
     </>

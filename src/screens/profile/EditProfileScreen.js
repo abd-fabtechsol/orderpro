@@ -8,15 +8,31 @@ import { hp, wp } from '../../constants/dimension';
 import io from "../../../assets/io.png"
 import phone from "../../../assets/phone.png"
 import email from "../../../assets/email.png"
-
+import Imageprofile from "../../../assets/Image-profile.png";
+import camra from "../../../assets/camra.png";
 const EditProfileScreen = () => {
   return (
     <AppView style={styles.container}>
       <View style={{flex:1}}>
 <Header title="Profile"/>
-      <View style={styles.avatarContainer}>
+      {/* <View style={styles.avatarContainer}>
         <Image source={pic} style={styles.avatar} />
+      </View> */}
+
+<View style={styles.profileImageContainer}>
+        <Image
+          source={Imageprofile}
+          style={styles.profileImage}
+        />
+        <TouchableOpacity >
+          {/* <Feather name="camera" size={18} color="#000" /> */}
+          <Image source={camra} style={[styles.cameraIcon,{width: 40, height: 40}]} resizeMode="contain" />
+        </TouchableOpacity>
       </View>
+
+
+
+
 
 
       <AppInput icon={io} placeholder="Abdomarouan" />
@@ -51,4 +67,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   updateText: { color: '#fff', fontWeight: '400', fontSize: 18 },
+  profileImageContainer: {
+    alignSelf: "center",
+    marginVertical: hp(4),
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#E5E7EB",
+  },
+  cameraIcon: {
+    position: "absolute",
+    bottom: -4,
+    right: 4,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 6,
+    elevation: 3,
+  },
 });
