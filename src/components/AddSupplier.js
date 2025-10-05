@@ -27,7 +27,7 @@ const AddSupplier = () => {
         <AppText style={styles.title}>Add New Supplier</AppText>
         <TouchableOpacity
           style={styles.closeIcon}
-          onPress={() => countryCodeSheetRef.current.close()}
+          // onPress={() => countryCodeSheetRef.current.close()}
         >
           <Ionicons name="close" size={20} color="#111" />
         </TouchableOpacity>

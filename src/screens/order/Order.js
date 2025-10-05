@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  Platform,
   Image,
 } from 'react-native';
 import AppView from '../../components/common/AppView';
@@ -12,7 +13,7 @@ import AppText from '../../components/common/AppText';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext';
 import pic from "../../../assets/dp.png";
-import { width } from '../../constants/dimension';
+import { hp, width } from '../../constants/dimension';
 import ReportsHeader from '../../components/ReportsHeader';
 const sampleOrders = [
   {
@@ -137,7 +138,7 @@ const Order = () => {
         data={filteredOrders}
         keyExtractor={item => item.id}
         renderItem={renderOrder}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: hp(14) }}
       />
     </AppView>
   );

@@ -56,7 +56,7 @@ const LoginScreen = () => {
     };
     return (
         <AppView style={styles.container}>
-            <ThemeSwitch style={styles.switch} />
+            {/* <ThemeSwitch style={styles.switch} /> */}
             <Swiper
                 style={styles.wrapper}
                 showsPagination={true}

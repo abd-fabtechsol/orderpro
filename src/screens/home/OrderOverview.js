@@ -20,7 +20,7 @@ const OrderOverview = () => {
     <AppView style={styles.container}>
       {/* <Text style={styles.header}>Order Overview</Text> */}
       <Header title={"Order Overview"} />
-      <ScrollView style={{marginTop:hp(3),flex:0.6}}>
+      <ScrollView style={{marginTop:hp(3),flex:0.5}}>
       {/* Goat Milk Item */}
       <View style={[styles.itemContainer,{borderColor:colors.border}]}>
         <Image
@@ -90,7 +90,7 @@ const OrderOverview = () => {
       </ScrollView>
 
       {/* Summary Section */}
-      <View style={{marginVertical:hp(3),flex:0.34}}>
+      <View style={{marginVertical:hp(3),flex:0.5}}>
       <View style={[styles.summaryContainer,{borderColor:colors.border}]}>
         <View style={styles.summaryRow}>
           <AppText style={{fontSize:14,fontWeight:300}}>Goat Milk</AppText>

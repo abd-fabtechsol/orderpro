@@ -53,6 +53,10 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
     marginBottom:0,
+    paddingBottom:Platform.select({
+      ios: 0,         // No margin for iOS
+      android: 20,    // Add margin for Android
+    }),
   },
 });
 

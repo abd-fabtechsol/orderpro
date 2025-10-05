@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     activeTab: { backgroundColor: '#fff' },
     tabText: { color: 'gray', fontWeight: '400' },
     activeTabText: { color: '#4CAF50', fontWeight: '500' },
-    productCard: { flexDirection: 'row', borderWidth: 1, borderRadius: 8, padding: 8, marginBottom: 12, elevation: 1 },
+    productCard: { flexDirection: 'row',  borderRadius: 8, padding: 8, marginBottom: 12, borderWidth: 1 },
     productImage: { width: 60, height: 60, borderRadius: 8 },
     productHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     productName: { fontWeight: '500', fontSize: 16 },

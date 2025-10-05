@@ -22,8 +22,8 @@ const ThemeSwitch = () => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'flex-end',
-    marginVertical: 10,
-    paddingHorizontal: 10,
+    // marginVertical: 10,
+    // paddingHorizontal: 10,
   },
 });
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch } from 'react-native';
+import { View, Text, StyleSheet, Switch, Platform } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
@@ -43,8 +43,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 15,
+    paddingHorizontal: 15,
     borderRadius: 10,
+    paddingVertical:Platform.select({
+      ios: 15,         // No margin for iOS
+      android: 0,    // Add margin for Android
+    })
   },
   label: { fontSize: 16,fontWeight:"400"  },
 });
