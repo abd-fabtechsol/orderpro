@@ -284,7 +284,7 @@ console.log(isMenuVisible1,"ddddd")
                 height={hp(70)}
                 bgColor={colors.background}
                 children={
-                    <AddSupplier />
+                    <AddSupplier  onClose={() => countryCodeSheetRef.current.close()}/>
                 }
             />
             <RbSheetComponet

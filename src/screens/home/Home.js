@@ -163,7 +163,7 @@ const{colors}=useTheme()
                 height={hp(70)}
                 bgColor={colors.background}
                 children={
-                  <AddSupplier/>
+                  <AddSupplier onClose={() => countryCodeSheetRef.current.close()}/>
                 }
                 />
 <RbSheetComponet
@@ -171,7 +171,7 @@ const{colors}=useTheme()
                 height={hp(70)}
                 bgColor={colors.background}
                 children={
-                  <AddProduct/>
+                  <AddProduct onClose={() => productSheetRef.current.close()}/>
                 }
                 />
     </AppView>
@@ -179,7 +179,7 @@ const{colors}=useTheme()
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1,paddingVertical: 16, },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",

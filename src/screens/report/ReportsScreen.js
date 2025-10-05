@@ -140,10 +140,10 @@ export default ReportsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    paddingVertical: 16,
 
   },
-  content: { padding: 0 },
+  content: { paddingHorizontal: 16 },
   filters: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 16 },
   filterBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1 },
   filterText: { fontSize: 14 },

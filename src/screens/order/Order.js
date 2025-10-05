@@ -110,6 +110,7 @@ const Order = () => {
     <AppView style={styles.container}>
       {/* Tabs */}
       <ReportsHeader/>
+      <View style={{flex:1,paddingHorizontal:16}}> 
       <View style={[styles.tabs,{backgroundColor:colors.cardColor}]}>
         {['Active', 'History'].map(tab => (
           <TouchableOpacity
@@ -140,13 +141,14 @@ const Order = () => {
         renderItem={renderOrder}
         contentContainerStyle={{ paddingBottom: hp(14) }}
       />
+      </View>
     </AppView>
   );
 };
 
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, },
+  container: { flex: 1, paddingVertical: 16, },
 
   tabs: { flexDirection: 'row', marginBottom: 12,borderRadius:10,padding:5 },
   tab: { flex: 1, padding: 7, alignItems: 'center',borderRadius:10 },

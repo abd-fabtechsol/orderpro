@@ -18,7 +18,7 @@ import AppText from "./common/AppText";
 import phone from "../../assets/phone.png";
 import profile from "../../assets/profile.png";
 import time from "../../assets/TimeCircle.png";
-const AddSupplier = () => {
+const AddSupplier = ({onClose}) => {
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -27,7 +27,7 @@ const AddSupplier = () => {
         <AppText style={styles.title}>Add New Supplier</AppText>
         <TouchableOpacity
           style={styles.closeIcon}
-          // onPress={() => countryCodeSheetRef.current.close()}
+          onPress={() => onClose()}
         >
           <Ionicons name="close" size={20} color="#111" />
         </TouchableOpacity>
