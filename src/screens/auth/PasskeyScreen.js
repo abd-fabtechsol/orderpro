@@ -47,7 +47,7 @@ const PasskeyScreen = () => {
       </View>
       <View >
       <AppButton title={'Setup'} onPress={() => {navigation.navigate("profile")}} />
-      <AppButton title={'Skip'} style={{marginTop: 10,backgroundColor:"#E2E8F0"}} textStyle={{color:"#6B7280"}} onPress={() => {}} />
+      <AppButton title={'Skip'} style={{marginTop: 10,backgroundColor:"#E2E8F0"}} textStyle={{color:"#6B7280"}} onPress={() => {navigation.navigate("profile")}}  />
       </View>
       
     </AppView>

@@ -8,8 +8,8 @@ import AppButton from './common/AppButton';
 import add from "../../assets/add.png"
 import addw from "../../assets/addw.png"
 import AppView from './common/AppView';
-
-const AddProduct = () => {
+import { Ionicons } from "@expo/vector-icons";
+const AddProduct = ({onClose}) => {
   const [item, setItem] = useState({ name: '', unit: '', price: '', note: '' });
 const{colors,isDarkMode} = useTheme();
   const handleSave = () => {
@@ -19,7 +19,16 @@ const{colors,isDarkMode} = useTheme();
 
   return (
     <AppView style={styles.container}>
+       <View style={styles.header}>
+       <View style={styles.dragIndicator} />
       <AppText style={styles.title}>Add New Item</AppText>
+      <TouchableOpacity
+          style={styles.closeIcon}
+          onPress={() => onClose()}
+        >
+          <Ionicons name="close" size={20} color="#111" />
+        </TouchableOpacity>
+        </View>
       <TouchableOpacity style={[styles.uploadButton,{backgroundColor:colors.cardColor,borderColor:colors.border}]}>
         <Image source={isDarkMode?add:addw} style={{width:30,height:30}} />
         <AppText style={styles.uploadText}>Browse to Upload</AppText>
@@ -67,7 +76,18 @@ const styles = StyleSheet.create({
   uploadButton: { height:hp(15), padding: 10, borderRadius: 20,marginVertical:6,borderStyle: 'dashed',borderWidth:2, alignItems: 'center' ,justifyContent:"center"},
   uploadText: {fontSize: 14, color: '#888' },
   maxSize: { color: '#888', marginBottom: 10 },
-  
+  header: {
+    // flexDirection:"row",
+    // justifyContent:"space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  closeIcon: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    padding: 4,
+  },
   saveButton: { backgroundColor: '#4CAF50', padding: 10, borderRadius: 5, alignItems: 'center' },
   saveText: { color: 'white', fontWeight: 'bold' },
 });

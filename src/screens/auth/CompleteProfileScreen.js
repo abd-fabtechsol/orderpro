@@ -48,7 +48,7 @@ const CompleteProfileScreen = ({navigation}) => {
       <View style={styles.header}>
         <View/>
         <AppText style={[styles.headerTitle, { color: colors.text }]}>Complete Profile</AppText>
-        <TouchableOpacity onPress={() => {()=>console.log("first")}}>
+        <TouchableOpacity onPress={() => {navigation.navigate('MainTabs') }}>
           <AppText style={styles.skipText}>Skip</AppText>
         </TouchableOpacity>
       </View>
