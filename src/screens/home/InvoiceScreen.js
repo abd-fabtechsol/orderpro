@@ -54,9 +54,14 @@ const InvoiceScreen = ({ navigation }) => {
         <View style={styles.divider} />
         
         <View style={[styles.buttonContainer,{justifyContent:"space-between",flexDirection:"row"}]}>
-            <AppButton style={{width:wp(40),justifyContent:"center",alignItems:"center"}} textStyle={{justifyContent:"center",alignItems:"center"}}  title={"Mark as Paid"}  />
-            <AppButton style={{width:wp(40),backgroundColor:"#d3d3d3"}} textStyle={{color:colors.text}} title={"Download"}  />
-          
+            {/* <AppButton style={{width:wp(40),justifyContent:"center",alignItems:"center"}} textStyle={{justifyContent:"center",alignItems:"center"}}  title={"Mark as Paid"}  />
+            <AppButton style={{width:wp(40),backgroundColor:"#d3d3d3"}} textStyle={{color:colors.text}} title={"Download"}  /> */}
+          <TouchableOpacity style={[styles.markAsPaidButton,{backgroundColor: colors.buttonColor,}]}>
+            <AppText style={styles.buttonText}>Mark as Paid</AppText>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.downloadButton}>
+            <AppText style={styles.buttonText}>Download</AppText>
+          </TouchableOpacity>
         </View>
       </View>
     </AppView>
@@ -84,7 +89,7 @@ const styles = StyleSheet.create({
   buttonContainer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 },
   markAsPaidButton: { backgroundColor: '#28a745', padding: 10, borderRadius: 5, flex: 1, marginRight: 5 },
   downloadButton: { backgroundColor: '#d3d3d3', padding: 10, borderRadius: 5, flex: 1, marginLeft: 5 },
-  buttonText: { color: 'white', textAlign: 'center', fontWeight: 'bold' },
+  buttonText: { fontSize:16,color: 'white', textAlign: 'center', fontWeight: '500' },
 });
 
 export default InvoiceScreen;
