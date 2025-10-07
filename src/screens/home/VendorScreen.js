@@ -292,7 +292,7 @@ console.log(isMenuVisible1,"ddddd")
                 height={hp(70)}
                 bgColor={colors.background}
                 children={
-                    <AddProduct />
+                    <AddProduct onClose={() => productSheetRef.current.close()}/>
                 }
                 
             />
