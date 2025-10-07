@@ -54,14 +54,9 @@ const InvoiceScreen = ({ navigation }) => {
         <View style={styles.divider} />
         
         <View style={[styles.buttonContainer,{justifyContent:"space-between",flexDirection:"row"}]}>
-            <AppButton style={{height:43,width:wp(40)}} title={"Mark as Paid"}  />
-            <AppButton style={{height:43,width:wp(40),backgroundColor:"#d3d3d3"}} textStyle={{color:colors.text}} title={"Download"}  />
-          {/* <TouchableOpacity style={styles.markAsPaidButton}>
-            <AppText style={styles.buttonText}>Mark as Paid</AppText>
-          </TouchableOpacity> */}
-          {/* <TouchableOpacity style={styles.downloadButton}>
-            <AppText style={styles.buttonText}>Download</AppText>
-          </TouchableOpacity> */}
+            <AppButton style={{width:wp(40),justifyContent:"center",alignItems:"center"}} textStyle={{justifyContent:"center",alignItems:"center"}}  title={"Mark as Paid"}  />
+            <AppButton style={{width:wp(40),backgroundColor:"#d3d3d3"}} textStyle={{color:colors.text}} title={"Download"}  />
+          
         </View>
       </View>
     </AppView>

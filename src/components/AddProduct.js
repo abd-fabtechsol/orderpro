@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import AppButton from './common/AppButton';
 import add from "../../assets/add.png"
 import addw from "../../assets/addw.png"
+import AppView from './common/AppView';
 
 const AddProduct = () => {
   const [item, setItem] = useState({ name: '', unit: '', price: '', note: '' });
@@ -17,7 +18,7 @@ const{colors,isDarkMode} = useTheme();
   };
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <AppText style={styles.title}>Add New Item</AppText>
       <TouchableOpacity style={[styles.uploadButton,{backgroundColor:colors.cardColor,borderColor:colors.border}]}>
         <Image source={isDarkMode?add:addw} style={{width:30,height:30}} />
@@ -56,7 +57,7 @@ const{colors,isDarkMode} = useTheme();
       />
       </View>
       <AppButton title={"Save"} style={{marginBottom:hp(2)}}/>
-    </View>
+    </AppView>
   );
 };
 

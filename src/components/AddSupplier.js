@@ -18,9 +18,10 @@ import AppText from "./common/AppText";
 import phone from "../../assets/phone.png";
 import profile from "../../assets/profile.png";
 import time from "../../assets/TimeCircle.png";
+import AppView from "./common/AppView";
 const AddSupplier = ({onClose}) => {
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.dragIndicator} />
@@ -76,7 +77,7 @@ const AddSupplier = ({onClose}) => {
       <TouchableOpacity style={styles.addButton}>
         <Text style={styles.addButtonText}>Add Supplier</Text>
       </TouchableOpacity>
-    </View>
+    </AppView>
   )
 }
 
