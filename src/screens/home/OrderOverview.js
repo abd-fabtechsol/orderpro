@@ -21,7 +21,7 @@ const OrderOverview = () => {
 
   const openWhatsApp = async () => {
     // For Android use whatsapp://
-    // For iOS use https://wa.me
+    // For iOS use https://wa.me  
     const url =
       Platform.OS === "ios"
         ? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
