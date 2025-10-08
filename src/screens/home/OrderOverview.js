@@ -154,7 +154,7 @@ const OrderOverview = () => {
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>
         
-        <AppButton style={[styles.emailButton,{height:45,width:wp(42)}]} image={Gmail} title={"Via Email"} textStyle={{color:colors.text,fontSize:16}} onPress={() => {}} />
+        <AppButton style={[styles.emailButton,{height:45,width:wp(42)}]} image={Gmail} title={"Via Email"} textStyle={{color:colors.text,fontSize:16}} onPress={() => {setPopupVisible(true)}} />
         {/* <AppButton   style={{height:45,width:wp(42)}} image={a23} title={"Via Whatsapp"} textStyle={{fontSize:16}} onPress={() => {setPopupVisible(true)}} /> */}
         <AppButton   style={{height:45,width:wp(42)}} image={a23} title={"Via Whatsapp"} textStyle={{fontSize:16}} onPress={() => openWhatsApp()} />
         
