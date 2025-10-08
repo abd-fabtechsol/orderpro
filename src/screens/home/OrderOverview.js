@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,Linking,Alert, Platform } from 'react-native';
 import AppView from '../../components/common/AppView';
 import Header from '../../components/Header';
 import { height, hp, width, wp } from "../../constants/dimension";
@@ -16,6 +16,43 @@ import OrderSuccessPopup from './OrderSuccessPopup';
 const OrderOverview = () => {
     const{colors}=useTheme()
     const [isPopupVisible, setPopupVisible] = useState(false);
+    const phoneNumber = "923001234567";  // your recipient’s number (country code + number)
+  const message = "Hello! This is a test message 🚀";
+
+  const openWhatsApp = async () => {
+    // For Android use whatsapp://
+    // For iOS use https://wa.me
+    const url =
+      Platform.OS === "ios"
+        ? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
+        : `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        // WhatsApp is not installed or URL not supported
+        Alert.alert(
+          "WhatsApp not available",
+          "Please install WhatsApp to continue.",
+          [
+            {
+              text: "Open App Store",
+              onPress: () =>
+                Linking.openURL("https://apps.apple.com/app/whatsapp-messenger/id310633997"),
+            },
+            { text: "Cancel", style: "cancel" },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error("Error opening WhatsApp:", error);
+      Alert.alert("Could not open WhatsApp");
+    }
+  };
+
   return (
     <AppView style={styles.container}>
       {/* <Text style={styles.header}>Order Overview</Text> */}
@@ -118,7 +155,8 @@ const OrderOverview = () => {
       <View style={styles.buttonContainer}>
         
         <AppButton style={[styles.emailButton,{height:45,width:wp(42)}]} image={Gmail} title={"Via Email"} textStyle={{color:colors.text,fontSize:16}} onPress={() => {}} />
-        <AppButton   style={{height:45,width:wp(42)}} image={a23} title={"Via Whatsapp"} textStyle={{fontSize:16}} onPress={() => {setPopupVisible(true)}} />
+        {/* <AppButton   style={{height:45,width:wp(42)}} image={a23} title={"Via Whatsapp"} textStyle={{fontSize:16}} onPress={() => {setPopupVisible(true)}} /> */}
+        <AppButton   style={{height:45,width:wp(42)}} image={a23} title={"Via Whatsapp"} textStyle={{fontSize:16}} onPress={() => openWhatsApp()} />
         
       </View>
       </View>
