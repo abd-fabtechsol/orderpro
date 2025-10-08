@@ -26,7 +26,7 @@ const{colors,isDarkMode} = useTheme();
           style={styles.closeIcon}
           onPress={() => onClose()}
         >
-          <Ionicons name="close" size={20} color="#111" />
+          <Ionicons name="close" size={20} color={colors.text} />
         </TouchableOpacity>
         </View>
       <TouchableOpacity style={[styles.uploadButton,{backgroundColor:colors.cardColor,borderColor:colors.border}]}>

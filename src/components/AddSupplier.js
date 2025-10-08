@@ -19,7 +19,9 @@ import phone from "../../assets/phone.png";
 import profile from "../../assets/profile.png";
 import time from "../../assets/TimeCircle.png";
 import AppView from "./common/AppView";
+import { useTheme } from "../context/ThemeContext";
 const AddSupplier = ({onClose}) => {
+  const{colors,isDarkMode} = useTheme();
   return (
     <AppView style={styles.container}>
       {/* Header */}
@@ -30,7 +32,7 @@ const AddSupplier = ({onClose}) => {
           style={styles.closeIcon}
           onPress={() => onClose()}
         >
-          <Ionicons name="close" size={20} color="#111" />
+          <Ionicons name="close" size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
 
