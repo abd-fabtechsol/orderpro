@@ -1,41 +1,94 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Yarn
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.yarnrc.yml
 
 # Expo
 .expo/
+.expo-shared/
 dist/
 web-build/
 expo-env.d.ts
 
 # Native
-.kotlin/
 *.orig.*
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
+*.hprof
+.cxx/
+.kotlin/
 
 # Metro
 .metro-health-check*
 
-# debug
+# Debug & Logs
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+*.log
+
+# Testing
+coverage/
+.nyc_output/
 
 # macOS
 .DS_Store
 *.pem
 
-# local env files
+# Environment files
+.env
 .env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# typescript
+# TypeScript
 *.tsbuildinfo
+next-env.d.ts
 
-# generated native folders
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/
+
+# Generated native folders
 /ios
 /android
+
+# Build artifacts
+build/
+*.apk
+*.aab
+*.ipa
+
+# Miscellaneous
+.cache/
+temp/
+tmp/
+*.tmp
+.eslintcache
+
+# Lock files (keep only yarn.lock or package-lock.json, not both)
+package-lock.json

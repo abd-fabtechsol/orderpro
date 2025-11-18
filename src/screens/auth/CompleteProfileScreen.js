@@ -99,7 +99,7 @@ const CompleteProfileScreen = ({navigation}) => {
 
             <AppInput
             icon={email}
-            placeholder="Business or personal name"
+            placeholder="Enter Your Email"
             placeholderTextColor="#9CA3AF"
            
           />

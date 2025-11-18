@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  SafeAreaView,
+
   StatusBar,
   Platform,
   StyleSheet,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useKeyboardAnimation } from 'react-native-keyboard-controller';
 import { useTheme } from '../../context/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AppView = ({ children, style }) => {
   const { isDarkMode, colors } = useTheme();
@@ -27,7 +28,7 @@ const AppView = ({ children, style }) => {
         <KeyboardAvoidingView
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={0}
+          // keyboardVerticalOffset={0}
         >
           <View
             style={[
