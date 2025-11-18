@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   Image,
   SafeAreaView,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AppView from "../../components/common/AppView";
@@ -23,6 +25,7 @@ import AddSupplier from "../../components/AddSupplier";
 import { hp } from "../../constants/dimension";
 import { useNavigation } from "@react-navigation/native";
 import AddProduct from "../../components/AddProduct";
+import apiClient from "../../api/apiClient";
 
 
 
@@ -33,81 +36,137 @@ export default function Home( ) {
   const productSheetRef = useRef();
   const [menuVisible, setMenuVisible] = useState(false)
 const{colors}=useTheme()
-  const suppliers = [
-    {
-      id: "1",
-      name: "DaleFresh",
-      time: "09:00 AM - 05:00 PM",
-      status: "Open",
-      order:"No Order yet",
-      logo: "https://cdn-icons-png.flaticon.com/512/3126/3126647.png",
-    },
-    {
-      id: "2",
-      name: "GreenMart",
-      time: "08:30 AM - 06:30 PM",
-      status: "Open",
-      order:"No Order yet",
-      logo: "https://cdn-icons-png.flaticon.com/512/2909/2909753.png",
-    },
-    {
-      id: "3",
-      name: "FreshFarm",
-      time: "Closed • Opens 9 AM",
-      status: "Closed",
-      order:"Last Order: Tomatoes 10kg, Oil 2L",
-      logo: "https://cdn-icons-png.flaticon.com/512/2331/2331785.png",
-    },
-    {
-      id: "4",
-      name: "AquaSuppliers",
-      time: "08:00 AM - 07:00 PM",
-      status: "Open",
-      order:"Last Order: Tomatoes 10kg, Oil 2L",
-      logo: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png",
-    },
-    {
-      id: "5",
-      name: "AquaSuppliers",
-      time: "08:00 AM - 07:00 PM",
-      status: "Open",
-      order:"Last Order: Tomatoes 10kg, Oil 2L",
-      logo: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png",
-    },
-    {
-      id: "6",
-      name: "AquaSuppliers",
-      time: "08:00 AM - 07:00 PM",
-      status: "Open",
-      order:"Last Order: Tomatoes 10kg, Oil 2L",
-      logo: "https://cdn-icons-png.flaticon.com/512/2921/2921822.png",
-    },
-  ];
 
-  const renderSupplier = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.card,{backgroundColor:colors.background,borderColor:colors.border}]}
-      onPress={() => navigation.navigate('ProfileDetails',{screen:"vendor"})}
-    >
-      <Image source={{ uri: item.logo }} style={styles.logo} />
-      <View style={{ flex: 1 }}>
-        <View style={{ flexDirection: "row",justifyContent:"space-between",alignItems:"center",marginBottom: 3 }}>
-        <View style={{ flexDirection: "row",gap:5,alignItems:"center",marginBottom: 3 }}>
-        <AppText style={styles.name}>{item.name}</AppText>
-        <AppText style={{fontSize:12,backgroundColor:"#EF4444",color:"white",paddingHorizontal:5,paddingVertical:2,borderRadius:20}}>{"New"}</AppText>
+  // API state
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextPage, setNextPage] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
+  // Fetch suppliers from API
+  const fetchSuppliers = async (page = 1, isRefreshing = false) => {
+    if (page === 1) {
+      isRefreshing ? setRefreshing(true) : setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
+    try {
+      const result = await apiClient.get(`suppliers/?page=${page}`);
+
+      console.log('Suppliers Result:', JSON.stringify(result));
+
+      if (result.ok && result.data) {
+        // API returns nested structure: { success, message, data: [...], pagination: {...} }
+        const supplierData = result.data.data || result.data.results || result.data;
+        const pagination = result.data.pagination || {};
+        const next = pagination.next || result.data.next;
+
+        if (page === 1) {
+          // First page - replace all data
+          setSuppliers(Array.isArray(supplierData) ? supplierData : []);
+        } else {
+          // Subsequent pages - append data
+          setSuppliers(prev => [...prev, ...(Array.isArray(supplierData) ? supplierData : [])]);
+        }
+
+        // Set next page URL
+        setNextPage(next);
+        setCurrentPage(page);
+
+        console.log('Loaded suppliers:', Array.isArray(supplierData) ? supplierData.length : 0);
+      } else {
+        console.error('Failed to fetch suppliers:', result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+      setLoadingMore(false);
+    }
+  };
+
+  // Load suppliers on component mount
+  useEffect(() => {
+    fetchSuppliers(1);
+  }, []);
+
+  // Handle pull-to-refresh
+  const handleRefresh = () => {
+    fetchSuppliers(1, true);
+  };
+
+  // Handle load more (pagination)
+  const handleLoadMore = () => {
+    if (nextPage && !loadingMore) {
+      fetchSuppliers(currentPage + 1);
+    }
+  };
+
+  // Format time from API (24h to 12h format)
+  const formatTime = (time) => {
+    if (!time) return '';
+    // Convert "17:46:43.577Z" to "05:46 PM"
+    const date = new Date(`2000-01-01T${time}`);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  // Check if supplier is open
+  const isSupplierOpen = (openTime, closeTime) => {
+    if (!openTime || !closeTime) return false;
+
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+
+    const open = new Date(`2000-01-01T${openTime}`);
+    const close = new Date(`2000-01-01T${closeTime}`);
+    const openMinutes = open.getHours() * 60 + open.getMinutes();
+    const closeMinutes = close.getHours() * 60 + close.getMinutes();
+
+    return currentTime >= openMinutes && currentTime <= closeMinutes;
+  };
+
+  const renderSupplier = ({ item }) => {
+    const status = isSupplierOpen(item.open_time, item.close_time) ? 'Open' : 'Closed';
+    const timeDisplay = `${formatTime(item.open_time)} - ${formatTime(item.close_time)}`;
+
+    return (
+      <TouchableOpacity
+        style={[styles.card,{backgroundColor:colors.background,borderColor:colors.border}]}
+        onPress={() => navigation.navigate('ProfileDetails',{screen:"vendor", supplierId: item.id})}
+      >
+        <Image
+          source={{ uri: item.image || 'https://cdn-icons-png.flaticon.com/512/3126/3126647.png' }}
+          style={styles.logo}
+        />
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: "row",justifyContent:"space-between",alignItems:"center",marginBottom: 3 }}>
+            <View style={{ flexDirection: "row",gap:5,alignItems:"center",marginBottom: 3 }}>
+              <AppText style={styles.name}>{item.name}</AppText>
+              {/* Show "New" badge for recently created suppliers (within 7 days) */}
+              {new Date() - new Date(item.created_at) < 7 * 24 * 60 * 60 * 1000 && (
+                <AppText style={{fontSize:12,backgroundColor:"#EF4444",color:"white",paddingHorizontal:5,paddingVertical:2,borderRadius:20}}>
+                  New
+                </AppText>
+              )}
+            </View>
+            <View style={styles.statusBox(status)}>
+              <Text style={styles.statusText(status)}>{status}</Text>
+            </View>
+          </View>
+          <AppText style={styles.time}>{timeDisplay}</AppText>
+          <AppText style={styles.time}>{item.phone || 'No phone'}</AppText>
         </View>
-        <View style={styles.statusBox(item.status)}>
-        <Text style={styles.statusText(item.status)}>{item.status}</Text>
-      </View>
-
-        </View>
-        <AppText style={styles.time}>{item.time}</AppText>
-        <AppText style={styles.time}>{item.order}</AppText>
-      </View>
-      
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <AppView style={styles.container}>
@@ -127,15 +186,54 @@ const{colors}=useTheme()
       </View>
 
       {/* Supplier List */}
-      <FlatList
-        data={suppliers.filter((s) =>
-          s.name.toLowerCase().includes(search.toLowerCase())
-        )}
-        renderItem={renderSupplier}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
-      />
+      {loading && suppliers.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#1DBF72" />
+          <AppText style={{ marginTop: 10, color: colors.secondaryText }}>Loading suppliers...</AppText>
+        </View>
+      ) : (
+        <FlatList
+          data={suppliers.filter((s) =>
+            s.name.toLowerCase().includes(search.toLowerCase())
+          )}
+          renderItem={renderSupplier}
+          keyExtractor={(item) => item.id.toString()}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={['#1DBF72']}
+              tintColor="#1DBF72"
+            />
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() => {
+            if (loadingMore) {
+              return (
+                <View style={{ paddingVertical: 20 }}>
+                  <ActivityIndicator size="small" color="#1DBF72" />
+                </View>
+              );
+            }
+            return null;
+          }}
+          ListEmptyComponent={() => {
+            if (!loading) {
+              return (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 50 }}>
+                  <AppText style={{ fontSize: 16, color: colors.secondaryText }}>
+                    {search ? 'No suppliers found' : 'No suppliers available'}
+                  </AppText>
+                </View>
+              );
+            }
+            return null;
+          }}
+        />
+      )}
 
       {/* Floating Add Button */}
       <TouchableOpacity style={styles.fab} onPress={() => setMenuVisible(true)}>
@@ -163,7 +261,13 @@ const{colors}=useTheme()
                 height={hp(70)}
                 bgColor={colors.background}
                 children={
-                  <AddSupplier onClose={() => countryCodeSheetRef.current.close()}/>
+                  <AddSupplier
+                    onClose={() => countryCodeSheetRef.current.close()}
+                    onSuccess={() => {
+                      // Refresh suppliers list after successful addition
+                      fetchSuppliers(1);
+                    }}
+                  />
                 }
                 />
 <RbSheetComponet

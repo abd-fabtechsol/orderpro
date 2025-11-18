@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, Image, TextInput, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import { View, Image, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert } from "react-native";
 import Swiper from "react-native-swiper";
 import pic1 from "../../../assets/market.png";
 import pic from "../../../assets/order.png";
@@ -14,6 +14,7 @@ import CountrySelectionSheet from "../../components/BottomSheet/CountrySelection
 import RbSheetComponet from "../../components/common/RbSheetComponet";
 import { sizes } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
+import apiClient from "../../api/apiClient";
 const { width } = Dimensions.get("window");
 
 const slides = [
@@ -36,7 +37,9 @@ const LoginScreen = () => {
     const navigation = useNavigation();
     const countryCodeSheetRef = useRef();
     const [countryCodeData, setCountryCodeData] = useState(countryCodes);
-    const [phoneNumer, setPhoneNumber] = useState(__DEV__ && '3176144904');
+    const [phoneNumer, setPhoneNumber] = useState(__DEV__ ? '3176144904' : '');
+    const [phoneError, setPhoneError] = useState('');
+    const [loading, setLoading] = useState(false);
     const [country, setCountry] = useState({
         id: 222,
         code: 'US',
@@ -44,16 +47,72 @@ const LoginScreen = () => {
         callingCode: '+1',
         flag: '🇺🇸',
     });
+
     const handleSelectCountry = item => {
         setCountry(item);
         countryCodeSheetRef?.current?.close();
     };
+
     const handleSearch = text => {
         const filteredData = countryCodes.filter(item => {
             return item.name.toLowerCase().includes(text.toLowerCase());
         });
         setCountryCodeData(filteredData);
     };
+
+    const handleSubmit = async () => {
+        // Clear previous errors
+        setPhoneError('');
+
+        // Validation
+        if (!phoneNumer || phoneNumer.trim().length === 0) {
+            setPhoneError('Please enter your phone number');
+            return;
+        }
+
+        if (phoneNumer.length < 8) {
+            setPhoneError('Please enter a valid phone number');
+            return;
+        }
+
+        // Start loading
+        setLoading(true);
+
+        try {
+            const fullPhone = country.callingCode + phoneNumer;
+            const result = await apiClient.post('auth/login/', { phone: fullPhone });
+
+            console.log("Login API Result:", result);
+
+            if (result.ok) {
+                // Success - navigate to OTP screen
+                Alert.alert(
+                    'OTP Sent',
+                    'An OTP has been sent to your phone number.',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => navigation.navigate('otp', { phone: fullPhone }),
+                        },
+                    ]
+                );
+            } else {
+                // API returned error
+                const errorMessage = result.data?.message || result.data?.error || 'Failed to send OTP. Please try again.';
+                setPhoneError(errorMessage);
+                Alert.alert('Error', errorMessage);
+            }
+        } catch (error) {
+            // Network or other error
+            console.error('Login error:', error);
+            const errorMessage = 'Network error. Please check your connection and try again.';
+            setPhoneError(errorMessage);
+            Alert.alert('Error', errorMessage);
+        } finally {
+            // Stop loading
+            setLoading(false);
+        }
+    }
     return (
         <AppView style={styles.container}>
             {/* <ThemeSwitch style={styles.switch} /> */}
@@ -76,33 +135,56 @@ const LoginScreen = () => {
             {/* Input */}
 
 
-            <View style={[styles.inputContainer, { borderColor: colors.border, marginBottom: hp(2) }]}>
+            <View style={[styles.inputContainer, { borderColor: phoneError ? 'red' : colors.border, marginBottom: hp(2) }]}>
                 <TouchableOpacity
                     style={styles.flagWithCode}
-                    onPress={() => countryCodeSheetRef?.current?.open()}>
+                    onPress={() => countryCodeSheetRef?.current?.open()}
+                    disabled={loading}>
                     <AppText style={{ color: colors.text, fontSize: sizes.medium }} >
-                        {country.flag} 
+                        {country.flag}
                         {country.callingCode}
                     </AppText>
                 </TouchableOpacity>
                 <View style={{ width: 10,height:hp(3),borderRightWidth:2,borderRightColor:colors.border }} />
                 <TextInput
                     placeholder={'Phone number'}
+                    placeholderTextColor={colors.secondaryText}
                     value={phoneNumer}
                     onChangeText={text => {
-                        setPhoneNumber(text), setPhoneError('');
+                        setPhoneNumber(text);
+                        setPhoneError('');
                     }}
+                    keyboardType="phone-pad"
+                    editable={!loading}
                     style={[styles.input,{ color: colors.text }]}
                 />
-
             </View>
 
+            {/* Error Message */}
+            {phoneError ? (
+                <AppText style={styles.errorText}>{phoneError}</AppText>
+            ) : null}
 
+            {/* Continue Button */}
+            <AppButton
+                onPress={loading ? null : handleSubmit}
+                title={loading ? "Sending OTP..." : "Continue with phone"}
+                style={{ opacity: loading ? 0.7 : 1 }}
+            />
 
-
-
-            <AppButton onPress={() => navigation.navigate("otp")} title="Continue with phone" />
-            <AppButton image={googleImage} title="Continue with google" style={{ marginTop: 10, backgroundColor: "transparent", borderWidth: 2, borderColor: colors.border }} textStyle={{ color: colors.text }} />
+            <AppButton
+                image={googleImage}
+                title="Continue with google"
+                onPress={loading ? null : () => Alert.alert('Coming Soon', 'Google sign-in will be available soon!')}
+                style={{
+                    marginTop: 10,
+                    backgroundColor: "transparent",
+                    borderWidth: 2,
+                    borderColor: colors.border,
+                    opacity: loading ? 0.5 : 1
+                }}
+                textStyle={{ color: colors.text }}
+            />
             <RbSheetComponet
                 ref={countryCodeSheetRef}
                 height={hp(70)}
@@ -192,6 +274,16 @@ const styles = StyleSheet.create({
         fontFamily: 'OpenSans-Regular',
         color: 'black',
         // backgroundColor:"red",
+    },
+    flagWithCode: {
+        paddingRight: 10,
+    },
+    errorText: {
+        color: 'red',
+        fontSize: sizes.small,
+        marginBottom: 10,
+        marginTop: -10,
+        paddingHorizontal: 5,
     },
 
 });

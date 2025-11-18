@@ -12,10 +12,14 @@ import { useTheme } from '../../context/ThemeContext';
 import AppButton from '../../components/common/AppButton';
 import { sizes } from '../../constants';
 import { hp, wp } from '../../constants/dimension';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 const PasskeyScreen = () => {
     const {colors,isDarkMode}=useTheme()
     const navigation=useNavigation()
+    const route=useRoute()
+
+    // Get phone number from navigation params
+    const phoneNumber = route.params?.phone || '';
   return (
     <AppView style={styles.container}>
         <View style={{flex:1,justifyContent:"center"}}>
@@ -46,8 +50,8 @@ const PasskeyScreen = () => {
       </View>
       </View>
       <View >
-      <AppButton title={'Setup'} onPress={() => {navigation.navigate("profile")}} />
-      <AppButton title={'Skip'} style={{marginTop: 10,backgroundColor:"#E2E8F0"}} textStyle={{color:"#6B7280"}} onPress={() => {navigation.navigate("profile")}}  />
+      <AppButton title={'Setup'} onPress={() => {navigation.navigate("profile", { phone: phoneNumber })}} />
+      <AppButton title={'Skip'} style={{marginTop: 10,backgroundColor:"#E2E8F0"}} textStyle={{color:"#6B7280"}} onPress={() => {navigation.navigate("profile", { phone: phoneNumber })}}  />
       </View>
       
     </AppView>

@@ -1,29 +1,30 @@
-
-
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import { ThemeProvider } from './src/context/ThemeContext';
-import LoginScreen from './src/screens/LoginScreen';
 import { NavigationContainer } from '@react-navigation/native';
-import DrawerNavigator from './src/navigation/DrawerNavigator';
-import HomeScreen from './src/screens/HomeScreen';
 import MainNavigation from './src/navigation/MainNavigation';
-import BottomTabNavigator from './src/navigation/BottomTabNavigator';
-
+import { store, persistor } from './src/redux/store';
 
 const App = () => {
-  
   return (
-    <ThemeProvider>
-      <NavigationContainer>
-        <MainNavigation/>
-      {/* <BottomTabNavigator/> */}
-      {/* <HomeScreen/> */}
-    </NavigationContainer>
-    {/* <LoginScreen/> */}
-    </ThemeProvider>
+    <Provider store={store}>
+      <PersistGate
+        loading={
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#1DBF72" />
+          </View>
+        }
+        persistor={persistor}
+      >
+        <ThemeProvider>
+          <NavigationContainer>
+            <MainNavigation />
+          </NavigationContainer>
+        </ThemeProvider>
+      </PersistGate>
+    </Provider>
   );
 };
-
-
 
 export default App;

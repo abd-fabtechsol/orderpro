@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Alert, ActionSheetIOS, Platform } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '../../context/ThemeContext';
 import AppView from '../../components/common/AppView';
@@ -18,12 +18,33 @@ import phone from "../../../assets/phone.png"
 import email from "../../../assets/email.png"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Button } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import apiClient from '../../api/apiClient';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser } from '../../redux/authSlice';
 
-const CompleteProfileScreen = ({navigation}) => {
+const CompleteProfileScreen = () => {
   const { colors } = useTheme();
+  const navigation = useNavigation();
+  const route = useRoute();
+  const dispatch = useDispatch();
+
+  // Get token from Redux to verify authentication
+  const { token } = useSelector((state) => state.auth);
+
   const countryCodeSheetRef = useRef();
   const [countryCodeData, setCountryCodeData] = useState(countryCodes);
-  const [phoneNumer, setPhoneNumber] = useState(__DEV__ && '3176144904');
+
+  // Get phone number from route params
+  const phoneFromParams = route.params?.phone || '';
+
+  const [phoneNumer, setPhoneNumber] = useState(phoneFromParams);
+  const [name, setName] = useState('');
+  const [emailValue, setEmailValue] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   const [country, setCountry] = useState({
       id: 222,
       code: 'US',
@@ -41,7 +62,172 @@ const CompleteProfileScreen = ({navigation}) => {
           return item.name.toLowerCase().includes(text.toLowerCase());
       });
       setCountryCodeData(filteredData);
-  };    
+  };
+
+  // Request permissions and pick image
+  const requestPermissions = async () => {
+    const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+    const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (cameraStatus !== 'granted' || libraryStatus !== 'granted') {
+      Alert.alert('Permission Required', 'Camera and photo library permissions are required to upload a profile picture.');
+      return false;
+    }
+    return true;
+  };
+
+  const pickImageFromCamera = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setProfileImage(result.assets[0]);
+    }
+  };
+
+  const pickImageFromGallery = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setProfileImage(result.assets[0]);
+    }
+  };
+
+  const handleImagePicker = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Photo', 'Choose from Gallery'],
+          cancelButtonIndex: 0,
+        },
+        buttonIndex => {
+          if (buttonIndex === 1) {
+            pickImageFromCamera();
+          } else if (buttonIndex === 2) {
+            pickImageFromGallery();
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        'Profile Picture',
+        'Choose an option',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Take Photo', onPress: pickImageFromCamera },
+          { text: 'Choose from Gallery', onPress: pickImageFromGallery },
+        ],
+        { cancelable: true }
+      );
+    }
+  };
+
+  const handleFinish = async () => {
+    // Validation
+    if (!name || name.trim().length === 0) {
+      Alert.alert('Error', 'Please enter your name');
+      return;
+    }
+
+    if (!emailValue || emailValue.trim().length === 0) {
+      Alert.alert('Error', 'Please enter your email');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailValue)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    // Check if token exists
+    console.log('Auth Token available:', token ? 'Yes' : 'No');
+    console.log('Token value:', token);
+
+    if (!token) {
+      Alert.alert('Error', 'Authentication token not found. Please try logging in again.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Create FormData
+      const formData = new FormData();
+      formData.append('name', name.trim());
+      formData.append('email', emailValue.trim());
+
+      // Add profile image if selected
+      if (profileImage) {
+        const filename = profileImage.uri.split('/').pop();
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+        formData.append('dp', {
+          uri: profileImage.uri,
+          name: filename,
+          type: type,
+        });
+      }
+
+      console.log('Submitting profile update...');
+
+      // Call API with FormData
+      // Note: Don't manually set Content-Type for FormData, let the browser/client set it
+      // Also, apiClient automatically adds the auth token from Redux
+      const result = await apiClient.patch('users/update_profile/', formData);
+
+      console.log('Profile Update Result:', result);
+
+      if (result.ok) {
+        // Update user data in Redux
+        if (result.data) {
+          dispatch(setUser(result.data));
+        }
+
+        Alert.alert(
+          'Success',
+          'Profile updated successfully!',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'MainTabs' }],
+                });
+              },
+            },
+          ]
+        );
+      } else {
+        const errorMessage = result.data?.message || result.data?.error || 'Failed to update profile. Please try again.';
+        Alert.alert('Error', errorMessage);
+      }
+    } catch (error) {
+      console.error('Profile Update Error:', error);
+      Alert.alert('Error', 'Network error. Please check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AppView style={styles.container}>
       {/* Header */}
@@ -56,10 +242,10 @@ const CompleteProfileScreen = ({navigation}) => {
       {/* Profile Image */}
       <View style={styles.profileImageContainer}>
         <Image
-          source={Imageprofile}
+          source={profileImage ? { uri: profileImage.uri } : Imageprofile}
           style={styles.profileImage}
         />
-        <TouchableOpacity >
+        <TouchableOpacity onPress={handleImagePicker}>
           {/* <Feather name="camera" size={18} color="#000" /> */}
           <Image source={camra} style={[styles.cameraIcon,{width: 40, height: 40}]} resizeMode="contain" />
         </TouchableOpacity>
@@ -67,21 +253,23 @@ const CompleteProfileScreen = ({navigation}) => {
 
       {/* Input Fields */}
       <View style={styles.form}>
-        
+
           <AppInput
           icon={io}
             placeholder="Business or personal name"
             placeholderTextColor="#9CA3AF"
-           
+            value={name}
+            onChangeText={setName}
+            editable={!loading}
           />
-        
+
 
         <View style={[styles.inputContainer, { borderColor: colors.border,  }]}>
                 <TouchableOpacity
                     style={styles.flagWithCode}
                     onPress={() => countryCodeSheetRef?.current?.open()}>
                     <AppText style={{ color: colors.text, fontSize: sizes.medium }} >
-                        {country.flag} 
+                        {country.flag}
                         {country.callingCode}
                     </AppText>
                 </TouchableOpacity>
@@ -89,10 +277,8 @@ const CompleteProfileScreen = ({navigation}) => {
                 <TextInput
                     placeholder={'Phone number'}
                     value={phoneNumer}
-                    onChangeText={text => {
-                        setPhoneNumber(text), setPhoneError('');
-                    }}
-                    style={[styles.input,{ color: colors.text }]}
+                    editable={false}
+                    style={[styles.input,{ color: colors.text, opacity: 0.6 }]}
                 />
 
             </View>
@@ -101,13 +287,21 @@ const CompleteProfileScreen = ({navigation}) => {
             icon={email}
             placeholder="Enter Your Email"
             placeholderTextColor="#9CA3AF"
-           
+            value={emailValue}
+            onChangeText={setEmailValue}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            editable={!loading}
           />
       </View>
 
       {/* Button */}
       <View style={styles.footer}>
-        <AppButton title={'Finish'} onPress={() => {navigation.navigate('MainTabs'); }} />
+        <AppButton
+          title={loading ? 'Updating...' : 'Finish'}
+          onPress={loading ? null : handleFinish}
+          style={{ opacity: loading ? 0.7 : 1 }}
+        />
       </View>
       <RbSheetComponet
                 ref={countryCodeSheetRef}
