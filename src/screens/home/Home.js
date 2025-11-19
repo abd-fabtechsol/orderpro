@@ -26,11 +26,14 @@ import { hp } from "../../constants/dimension";
 import { useNavigation } from "@react-navigation/native";
 import AddProduct from "../../components/AddProduct";
 import apiClient from "../../api/apiClient";
+import { useDispatch } from 'react-redux';
+import { setSuppliers as updateSuppliersInRedux } from '../../redux/supplierSlice';
 
 
 
 export default function Home( ) {
   const navigation=useNavigation()
+  const dispatch = useDispatch();
   const [search, setSearch] = useState("");
   const countryCodeSheetRef = useRef();
   const productSheetRef = useRef();
@@ -66,10 +69,18 @@ const{colors}=useTheme()
 
         if (page === 1) {
           // First page - replace all data
-          setSuppliers(Array.isArray(supplierData) ? supplierData : []);
+          const suppliers = Array.isArray(supplierData) ? supplierData : [];
+          setSuppliers(suppliers);
+          // Dispatch to Redux
+          dispatch(updateSuppliersInRedux(suppliers));
         } else {
           // Subsequent pages - append data
-          setSuppliers(prev => [...prev, ...(Array.isArray(supplierData) ? supplierData : [])]);
+          setSuppliers(prev => {
+            const updated = [...prev, ...(Array.isArray(supplierData) ? supplierData : [])];
+            // Dispatch to Redux
+            dispatch(updateSuppliersInRedux(updated));
+            return updated;
+          });
         }
 
         // Set next page URL
@@ -140,7 +151,7 @@ const{colors}=useTheme()
     return (
       <TouchableOpacity
         style={[styles.card,{backgroundColor:colors.background,borderColor:colors.border}]}
-        onPress={() => navigation.navigate('ProfileDetails',{screen:"vendor", supplierId: item.id})}
+        onPress={() => navigation.navigate('ProfileDetails',{screen:"vendor", params: { supplierId: item.id }})}
       >
         <Image
           source={{ uri: item.image || 'https://cdn-icons-png.flaticon.com/512/3126/3126647.png' }}

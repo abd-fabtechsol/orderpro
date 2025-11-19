@@ -13,16 +13,18 @@ import qw from "../../../assets/qw.png";
 import sunDark from "../../../assets/sunDark.png";
 import setting from "../../../assets/settingDev.png";
 import settingDark from "../../../assets/settingDark.png";
-import logout from "../../../assets/logout.png";
+import logouts from "../../../assets/logout.png";
 
 import AppView from '../../components/common/AppView';
 import ThemeSwitch from '../../components/common/ThemeSwitch';
 import { useTheme } from '../../context/ThemeContext';
 import AppText from '../../components/common/AppText';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../redux/authSlice';
 
 const ProfileScreen = ({ navigation }) => {
   const { colors, isDarkMode } = useTheme();
-
+ const dispatch = useDispatch();
   return (
     <AppView style={styles.container}>
       <ScrollView
@@ -78,10 +80,10 @@ const ProfileScreen = ({ navigation }) => {
           <AppText style={styles.itemText}>Settings</AppText>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        <TouchableOpacity onPress={()=>dispatch(logout())}
           style={[styles.item, { borderWidth: 1, borderColor: colors.border, marginTop: 20 }]}
         >
-          <Image source={logout} style={styles.icon} resizeMode="contain" />
+          <Image source={logouts} style={styles.icon} resizeMode="contain" />
           <AppText style={[styles.itemText, { color: 'red' }]}>Logout</AppText>
         </TouchableOpacity>
       </ScrollView>

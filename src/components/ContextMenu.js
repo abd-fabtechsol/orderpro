@@ -8,19 +8,28 @@ import copyw from "../../assets/copyw.png"
 import { Image } from 'react-native';
 import AppText from './common/AppText';
 import { useTheme } from '../context/ThemeContext';
-const ContextMenu = ({style, onClose }) => {
+const ContextMenu = ({style, onClose, onDelete, onEdit, onCopy }) => {
     const {colors,isDarkMode} = useTheme();
   return (
     <View style={[styles.container,{...style,backgroundColor:colors.background,borderWidth:1,borderColor:colors.border}]}>
-      <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+      <TouchableOpacity style={styles.menuItem} onPress={() => {
+        if (onCopy) onCopy();
+        onClose();
+      }}>
       <Image source={isDarkMode?copyw:copy} style={{width: 20, height: 20, marginRight: 10,}} resizeMode='contain' />
         <AppText style={styles.menuText}>Copy Link</AppText>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+      <TouchableOpacity style={styles.menuItem} onPress={() => {
+        if (onEdit) onEdit();
+        onClose();
+      }}>
       <Image source={isDarkMode?editw:edit} style={{width: 20, height: 20, marginRight: 10,}} resizeMode='contain' />
         <AppText style={styles.menuText}>Edit</AppText>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+      <TouchableOpacity style={styles.menuItem} onPress={() => {
+        if (onDelete) onDelete();
+        onClose();
+      }}>
         <Image source={trash} style={{width: 20, height: 20, marginRight: 10,}} resizeMode='contain' />
         <AppText style={[styles.menuText,{color:"#EF4444"}]}>Delete</AppText>
       </TouchableOpacity>

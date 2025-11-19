@@ -7,17 +7,81 @@ import { useTheme } from '../../context/ThemeContext';
 import AppInput from '../../components/common/AppInput';
 import AppText from '../../components/common/AppText';
 import dlt from "../../../assets/trash1.png"
-import q1 from "../../../assets/1.png"
-import q2 from "../../../assets/2.png"
 import Gmail from "../../../assets/Gmail.png"
 import a23 from "../../../assets/23.png"
 import AppButton from '../../components/common/AppButton';
 import OrderSuccessPopup from './OrderSuccessPopup';
+import { useRoute } from '@react-navigation/native';
+import apiClient from '../../api/apiClient';
+
 const OrderOverview = () => {
     const{colors}=useTheme()
+    const route = useRoute();
+    const { orderItems = [], supplier, supplierId } = route.params || {};
     const [isPopupVisible, setPopupVisible] = useState(false);
-    const phoneNumber = "923001234567";  // your recipient’s number (country code + number)
-  const message = "Hello! This is a test message 🚀";
+    const [items, setItems] = useState(orderItems);
+    const [orderNote, setOrderNote] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    // Remove item from order
+    const handleRemoveItem = (productId) => {
+        setItems(prev => prev.filter(item => item.id !== productId));
+    };
+
+    // Calculate total
+    const calculateTotal = () => {
+        return items.reduce((total, item) => {
+            return total + (parseFloat(item.price) * item.orderQuantity);
+        }, 0).toFixed(2);
+    };
+
+    // Submit order to API
+    const handleSubmitOrder = async () => {
+        if (items.length === 0) {
+            Alert.alert('Error', 'Please add items to your order');
+            return;
+        }
+
+        setSubmitting(true);
+
+        try {
+            // Format items for API: [{id: productId, quantity: quantity}]
+            const orderItems = items.map(item => ({
+                id: item.id,
+                quantity: item.orderQuantity
+            }));
+
+            const orderData = {
+                items: orderItems,
+                supplier: supplierId,
+                total_amount: calculateTotal(),
+                status: 'pending',
+                note: orderNote.trim() || ''
+            };
+
+            console.log('Submitting order:', orderData);
+
+            const result = await apiClient.post('orders/', orderData);
+
+            console.log('Order Result:', JSON.stringify(result));
+
+            if (result.ok) {
+                setPopupVisible(true);
+                // Clear order note after successful submission
+                setOrderNote('');
+            } else {
+                const errorMessage = result.data?.message || result.data?.error || 'Failed to create order. Please try again.';
+                Alert.alert('Error', errorMessage);
+            }
+        } catch (error) {
+            console.error('Order Error:', error);
+            Alert.alert('Error', 'Network error. Please check your connection and try again.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const phoneNumber = supplier?.phone?.replace(/\+/g, '') || "923001234567";
+    const message = `Hello! I would like to place an order:\n${items.map(item => `${item.name} x ${item.orderQuantity}${item.unit_type}`).join('\n')}\n\nTotal: $${calculateTotal()}\n${orderNote ? `\nNote: ${orderNote}` : ''}`;
 
   const openWhatsApp = async () => {
     // For Android use whatsapp://
@@ -58,106 +122,85 @@ const OrderOverview = () => {
       {/* <Text style={styles.header}>Order Overview</Text> */}
       <Header title={"Order Overview"} />
       <ScrollView style={{marginTop:hp(3),flex:0.5}}>
-      {/* Goat Milk Item */}
-      <View style={[styles.itemContainer,{borderColor:colors.border}]}>
-        <Image
-          source={q2}
-          style={styles.itemImage}
-          resizeMode='contain'
-        />
-        <View style={styles.itemDetails}>
-          <AppText style={styles.itemName}>Goat Milk x 17L</AppText>
-          <AppText style={styles.itemPrice}>$26.50</AppText>
-          <AppText style={styles.itemNote}>Note: "Good quality, always fresh"</AppText>
+      {/* Dynamic Order Items */}
+      {items.length > 0 ? (
+        items.map((item) => (
+          <View key={item.id} style={[styles.itemContainer,{borderColor:colors.border}]}>
+            <Image
+              source={{ uri: item.image }}
+              style={styles.itemImage}
+              resizeMode='contain'
+            />
+            <View style={styles.itemDetails}>
+              <AppText style={styles.itemName}>{item.name} x {item.orderQuantity}{item.unit_type}</AppText>
+              <AppText style={styles.itemPrice}>${(parseFloat(item.price) * item.orderQuantity).toFixed(2)}</AppText>
+              <AppText style={styles.itemNote}>Note: "{item.note || 'No notes'}"</AppText>
+            </View>
+            <TouchableOpacity style={styles.removeButton} onPress={() => handleRemoveItem(item.id)}>
+             <Image source={dlt} style={{width: 25, height: 25}} resizeMode="contain" />
+            </TouchableOpacity>
+          </View>
+        ))
+      ) : (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 50 }}>
+          <AppText style={{ fontSize: 16, color: '#888' }}>No items in order</AppText>
         </View>
-        <TouchableOpacity style={styles.removeButton}>
-         <Image source={dlt} style={{width: 25, height: 25}} resizeMode="contain" />
-        </TouchableOpacity>
-      </View>
-      <View style={[styles.itemContainer,{borderColor:colors.border}]}>
-        <Image
-          source={q2}
-          style={styles.itemImage}
-          resizeMode='contain'
-        />
-        <View style={styles.itemDetails}>
-          <AppText style={styles.itemName}>Goat Milk x 17L</AppText>
-          <AppText style={styles.itemPrice}>$26.50</AppText>
-          <AppText style={styles.itemNote}>Note: "Good quality, always fresh"</AppText>
-        </View>
-        <TouchableOpacity style={styles.removeButton}>
-         <Image source={dlt} style={{width: 25, height: 25}} resizeMode="contain" />
-        </TouchableOpacity>
-      </View>
-      <View style={[styles.itemContainer,{borderColor:colors.border}]}>
-        <Image
-          source={q2}
-          style={styles.itemImage}
-          resizeMode='contain'
-        />
-        <View style={styles.itemDetails}>
-          <AppText style={styles.itemName}>Goat Milk x 17L</AppText>
-          <AppText style={styles.itemPrice}>$26.50</AppText>
-          <AppText style={styles.itemNote}>Note: "Good quality, always fresh"</AppText>
-        </View>
-        <TouchableOpacity style={styles.removeButton}>
-         <Image source={dlt} style={{width: 25, height: 25}} resizeMode="contain" />
-        </TouchableOpacity>
-      </View>
-      <View style={[styles.itemContainer,{borderColor:colors.border}]}>
-        <Image
-          source={q2}
-          style={styles.itemImage}
-          resizeMode='contain'
-        />
-        <View style={styles.itemDetails}>
-          <AppText style={styles.itemName}>Goat Milk x 17L</AppText>
-          <AppText style={styles.itemPrice}>$26.50</AppText>
-          <AppText style={styles.itemNote}>Note: "Good quality, always fresh"</AppText>
-        </View>
-        <TouchableOpacity style={styles.removeButton}>
-         <Image source={dlt} style={{width: 25, height: 25}} resizeMode="contain" />
-        </TouchableOpacity>
-      </View>
-     
+      )}
 
-     
-      <AppInput multiline={true}
-  numberOfLines={5} placeholder=" Note" />
+
+      <AppInput
+        multiline={true}
+        numberOfLines={5}
+        placeholder=" Note"
+        value={orderNote}
+        onChangeText={setOrderNote}
+      />
       </ScrollView>
 
       {/* Summary Section */}
       <View style={{marginVertical:hp(3),flex:0.5}}>
       <View style={[styles.summaryContainer,{borderColor:colors.border}]}>
-        <View style={styles.summaryRow}>
-          <AppText style={{fontSize:14,fontWeight:300}}>Goat Milk</AppText>
-          <AppText style={{fontSize:14,fontWeight:300}}>17L</AppText>
-          <AppText style={{fontSize:14,fontWeight:300}}>$26.50</AppText>
-        </View>
-        <View style={styles.summaryRow}>
-          <AppText style={{fontSize:14,fontWeight:300}}>Cooking Oil</AppText>
-          <AppText style={{fontSize:14,fontWeight:300}}>10L</AppText>
-          <AppText style={{fontSize:14,fontWeight:300}}>$120</AppText>
-        </View>
-        <View style={styles.summaryRow}>
-          <AppText style={{fontSize:14,fontWeight:300}}>Ethiopian Coffee</AppText>
-          <AppText style={{fontSize:14,fontWeight:300}}>5 Pack</AppText>
-          <AppText style={{fontSize:14,fontWeight:300}}>$75</AppText>
-        </View>
+        {items.map((item) => (
+          <View key={item.id} style={styles.summaryRow}>
+            <AppText style={{fontSize:14,fontWeight:'300'}}>{item.name}</AppText>
+            <AppText style={{fontSize:14,fontWeight:'300'}}>{item.orderQuantity}{item.unit_type}</AppText>
+            <AppText style={{fontSize:14,fontWeight:'300'}}>${(parseFloat(item.price) * item.orderQuantity).toFixed(2)}</AppText>
+          </View>
+        ))}
         <View style={[styles.totalRow,{borderTopColor: colors.border}]}>
-          <AppText tyle={{fontSize:16,fontWeight:600}}>Total</AppText>
-          <AppText tyle={{fontSize:16,fontWeight:600}}>$221.50</AppText>
+          <AppText style={{fontSize:16,fontWeight:'600'}}>Total</AppText>
+          <AppText style={{fontSize:16,fontWeight:'600'}}>${calculateTotal()}</AppText>
         </View>
       </View>
       
 
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>
-        
-        <AppButton style={[styles.emailButton,{height:45,width:wp(42)}]} image={Gmail} title={"Via Email"} textStyle={{color:colors.text,fontSize:16}} onPress={() => {setPopupVisible(true)}} />
-        {/* <AppButton   style={{height:45,width:wp(42)}} image={a23} title={"Via Whatsapp"} textStyle={{fontSize:16}} onPress={() => {setPopupVisible(true)}} /> */}
-        <AppButton   style={{height:45,width:wp(42)}} image={a23} title={"Via Whatsapp"} textStyle={{fontSize:16}} onPress={() => openWhatsApp()} />
-        
+
+        <AppButton
+          style={[styles.emailButton,{height:45,width:wp(42), opacity: submitting ? 0.7 : 1}]}
+          image={Gmail}
+          title={submitting ? "Submitting..." : "Via Email"}
+          textStyle={{color:colors.text,fontSize:16}}
+          onPress={async () => {
+            await handleSubmitOrder();
+          }}
+          disabled={submitting || items.length === 0}
+        />
+        <AppButton
+          style={{height:45,width:wp(42), opacity: submitting ? 0.7 : 1}}
+          image={a23}
+          title={submitting ? "Submitting..." : "Via Whatsapp"}
+          textStyle={{fontSize:16}}
+          onPress={async () => {
+            await handleSubmitOrder();
+            if (!submitting) {
+              openWhatsApp();
+            }
+          }}
+          disabled={submitting || items.length === 0}
+        />
+
       </View>
       </View>
       <OrderSuccessPopup

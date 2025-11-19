@@ -11,8 +11,12 @@ import {
 } from "redux-persist"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import authSlice from "./authSlice"
+import supplierSlice from "./supplierSlice"
 
-const rootReducer = combineReducers({ auth: authSlice })
+const rootReducer = combineReducers({
+	auth: authSlice,
+	supplier: supplierSlice
+})
 
 const persistConfig = {
 	key: "root",

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Platform,
   Image,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
@@ -15,56 +17,7 @@ import { useTheme } from '../../context/ThemeContext';
 import pic from "../../../assets/dp.png";
 import { hp, width } from '../../constants/dimension';
 import ReportsHeader from '../../components/ReportsHeader';
-const sampleOrders = [
-  {
-    id: '1',
-    vendor: 'Daily Fresh',
-    orderNo: '#1243',
-    date: '15 - 08 - 2025',
-    total: 100.5,
-    status: 'Pending',
-  },
-  {
-    id: '2',
-    vendor: 'Daily Fresh',
-    orderNo: '#1244',
-    date: '15 - 08 - 2025',
-    total: 100.5,
-    status: 'Delivered',
-  },
-  {
-    id: '1',
-    vendor: 'Daily Fresh',
-    orderNo: '#1243',
-    date: '15 - 08 - 2025',
-    total: 100.5,
-    status: 'Pending',
-  },
-  {
-    id: '2',
-    vendor: 'Daily Fresh',
-    orderNo: '#1244',
-    date: '15 - 08 - 2025',
-    total: 100.5,
-    status: 'Delivered',
-  },
-  {
-    id: '1',
-    vendor: 'Daily Fresh',
-    orderNo: '#1243',
-    date: '15 - 08 - 2025',
-    total: 100.5,
-    status: 'Pending',
-  },
-  {
-    id: '2',
-    vendor: 'Daily Fresh',
-    orderNo: '#1244',
-    date: '15 - 08 - 2025',
-    total: 100.5,
-    status: 'Delivered',
-  },
-];
+import apiClient from '../../api/apiClient';
 
 const Order = () => {
   const {colors}=useTheme()
@@ -72,39 +25,145 @@ const Order = () => {
   const [activeTab, setActiveTab] = useState('Active');
   const [period, setPeriod] = useState('Today');
 
-  const filteredOrders = sampleOrders.filter(order =>
-    activeTab === 'Active' ? order.status !== 'Delivered' : order.status === 'Delivered'
-  );
+  // API State
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextPage, setNextPage] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const renderOrder = ({ item }) => (
-    <View style={[styles.card,{backgroundColor:colors.background,borderColor:colors.border}]}>
-      <View style={{flexDirection:"row",gap:10,alignItems:"center"}}>
-<Image source={pic} style={{width: 38, height: 38}} resizeMode="contain" />
-        <AppText style={styles.vendor}>{item.vendor}</AppText>
-      </View>
-      <View style={styles.cardHeader}>
-        <AppText style={styles.date}>{`Order: ${item.orderNo}`}</AppText>
-        <AppText style={styles.date}>{`Order: ${item.date}`}</AppText>
-      </View>
-      <View style={styles.cardFooter}>
+  // Fetch orders from API
+  const fetchOrders = async (page = 1, isRefreshing = false) => {
+    if (page === 1) {
+      isRefreshing ? setRefreshing(true) : setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
 
-        <AppText style={styles.total}>{`Total: `}</AppText>
-        <AppText style={styles.total}>{` $${item.total}`}</AppText>
-       
+    try {
+      const result = await apiClient.get(`orders/?page=${page}`);
+
+      console.log('Orders Result:', JSON.stringify(result));
+
+      if (result.ok && result.data) {
+        // Handle nested response structure
+        const orderData = result.data.data || result.data.results || result.data;
+        const pagination = result.data.pagination || {};
+        const next = pagination.next || result.data.next;
+
+        if (page === 1) {
+          // First page - replace all data
+          setOrders(Array.isArray(orderData) ? orderData : []);
+        } else {
+          // Subsequent pages - append data
+          setOrders(prev => [...prev, ...(Array.isArray(orderData) ? orderData : [])]);
+        }
+
+        // Set next page URL
+        setNextPage(next);
+        setCurrentPage(page);
+
+        console.log('Loaded orders:', Array.isArray(orderData) ? orderData.length : 0);
+      } else {
+        console.error('Failed to fetch orders:', result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+      setLoadingMore(false);
+    }
+  };
+
+  // Load orders on component mount
+  useEffect(() => {
+    fetchOrders(1);
+  }, []);
+
+  // Handle refresh
+  const handleRefresh = () => {
+    fetchOrders(1, true);
+  };
+
+  // Handle load more
+  const handleLoadMore = () => {
+    if (nextPage && !loadingMore) {
+      fetchOrders(currentPage + 1);
+    }
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day} - ${month} - ${year}`;
+  };
+
+  // Get status display
+  const getStatusDisplay = (status) => {
+    // Convert status to title case
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  };
+
+  // Get items count
+  const getItemsCount = (items) => {
+    if (!items) return 0;
+    if (typeof items === 'object' && !Array.isArray(items)) {
+      return Object.keys(items).length;
+    }
+    if (Array.isArray(items)) {
+      return items.length;
+    }
+    return 0;
+  };
+
+  // Filter orders based on active tab
+  const filteredOrders = orders.filter(order => {
+    const status = order.status?.toLowerCase();
+    if (activeTab === 'Active') {
+      return status !== 'delivered' && status !== 'completed';
+    } else {
+      return status === 'delivered' || status === 'completed';
+    }
+  });
+
+  const renderOrder = ({ item }) => {
+    const itemsCount = getItemsCount(item.items);
+    const statusDisplay = getStatusDisplay(item.status || 'pending');
+    const isPending = item.status?.toLowerCase() === 'pending';
+
+    return (
+      <View style={[styles.card,{backgroundColor:colors.background,borderColor:colors.border}]}>
+        <View style={{flexDirection:"row",gap:10,alignItems:"center"}}>
+          <Image source={pic} style={{width: 38, height: 38}} resizeMode="contain" />
+          <AppText style={styles.vendor}>{item.supplier || 'N/A'}</AppText>
+        </View>
+        <View style={styles.cardHeader}>
+          <AppText style={styles.date}>{`Order #${item.id}`}</AppText>
+          <AppText style={styles.date}>{formatDate(item.created_at)}</AppText>
+        </View>
+        <View style={styles.cardFooter}>
+          <AppText style={styles.total}>{`Total: $${item.total_amount || 0}`}</AppText>
+          <AppText style={styles.date}>{`${itemsCount} item${itemsCount !== 1 ? 's' : ''}`}</AppText>
+        </View>
+        <View style={styles.statusWrapper}>
+          <AppText style={[styles.status, isPending ? styles.pending : styles.delivered,{backgroundColor:colors.cardColor}]}>
+            {statusDisplay}
+          </AppText>
+          <TouchableOpacity onPress={() => navigation.navigate('ProfileDetails', {
+            screen: 'invoice',
+            params: { order: item },
+          })}>
+            <AppText style={styles.invoiceLink}>View Invoice</AppText>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.statusWrapper}>
-        <AppText style={[styles.status, item.status === 'Pending' ? styles.pending : styles.delivered,{backgroundColor:colors.cardColor}]}>
-          {item.status}
-        </AppText>
-         <TouchableOpacity onPress={() => navigation.navigate('ProfileDetails', {  // tab or parent route
-  screen: 'invoice',           // child screen
-  params: { order: item },
-})}>
-          <AppText style={styles.invoiceLink}>View Invoice</AppText>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <AppView style={styles.container}>
@@ -135,12 +194,43 @@ const Order = () => {
       </View>
 
       {/* Orders List */}
-      <FlatList
-        data={filteredOrders}
-        keyExtractor={item => item.id}
-        renderItem={renderOrder}
-        contentContainerStyle={{ paddingBottom: hp(14) }}
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#1DBF72" />
+          <AppText style={{ marginTop: 10, color: '#888' }}>Loading orders...</AppText>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredOrders}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderOrder}
+          contentContainerStyle={{ paddingBottom: hp(14) }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={['#1DBF72']}
+              tintColor="#1DBF72"
+            />
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() =>
+            loadingMore ? (
+              <View style={{ paddingVertical: 20 }}>
+                <ActivityIndicator size="small" color="#1DBF72" />
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={() => (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 50 }}>
+              <AppText style={{ fontSize: 16, color: '#888' }}>
+                {activeTab === 'Active' ? 'No active orders' : 'No order history'}
+              </AppText>
+            </View>
+          )}
+        />
+      )}
       </View>
     </AppView>
   );
