@@ -19,12 +19,13 @@ import AppView from '../../components/common/AppView';
 import ThemeSwitch from '../../components/common/ThemeSwitch';
 import { useTheme } from '../../context/ThemeContext';
 import AppText from '../../components/common/AppText';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/authSlice';
 
 const ProfileScreen = ({ navigation }) => {
   const { colors, isDarkMode } = useTheme();
- const dispatch = useDispatch();
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.auth.user);
   return (
     <AppView style={styles.container}>
       <ScrollView
@@ -34,9 +35,12 @@ const ProfileScreen = ({ navigation }) => {
         {/* Profile header */}
         {/* <ThemeSwitch style={styles.switch} /> */}
         <View style={styles.header}>
-          <Image source={qw} style={styles.avatar} />
-          <AppText style={styles.name}>Abdomarouan</AppText>
-          <AppText style={styles.phone}>+1 (715) 644-5125</AppText>
+          <Image
+            source={user?.profile_image ? { uri: user.profile_image } : user?.image ? { uri: user.image } : qw}
+            style={styles.avatar}
+          />
+          <AppText style={styles.name}>{user?.name || user?.username || 'User'}</AppText>
+          <AppText style={styles.phone}>{user?.phone || user?.phone_number || 'No phone number'}</AppText>
         </View>
 
         {/* Menu items */}

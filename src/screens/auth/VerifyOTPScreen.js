@@ -82,13 +82,13 @@ const VerifyOTPScreen = () => {
       console.log('OTP Verify Result:', result?.data);
 
       if (result.ok) {
-        const { access, refreshToken, userData } = result.data;
+        const { access, refreshToken, user } = result.data;
 
         // Dispatch login action to Redux
         dispatch(login({
           token: access,
           refreshToken: refreshToken,
-          userData: userData
+          userData: user
         }));
 
         // Show success message
