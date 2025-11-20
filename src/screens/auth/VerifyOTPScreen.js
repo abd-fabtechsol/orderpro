@@ -8,7 +8,7 @@ import { useTheme } from '../../context/ThemeContext';
 import AppButton from '../../components/common/AppButton';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import apiClient from '../../api/apiClient';
-import { login } from '../../redux/authSlice';
+import { login, setAuthData } from '../../redux/authSlice';
 
 const VerifyOTPScreen = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -84,29 +84,56 @@ const VerifyOTPScreen = () => {
       if (result.ok) {
         const { access, refreshToken, user } = result.data;
 
-        // Dispatch login action to Redux
-        dispatch(login({
-          token: access,
-          refreshToken: refreshToken,
-          userData: user
-        }));
+        // Check if user has email (profile is complete)
+        const hasEmail = user?.email && user.email.trim().length > 0;
 
-        // Show success message
-        Alert.alert(
-          'Success',
-          'OTP verified successfully!',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                // Navigate based on profile completion status
-                
-                  navigation.navigate('PasskeyScreen', { phone: phoneNumber });
-               
+        if (hasEmail) {
+          // User has completed profile, set login to true
+          dispatch(login({
+            token: access,
+            refreshToken: refreshToken,
+            userData: user
+          }));
+
+          // Navigate to MainTabs
+          Alert.alert(
+            'Success',
+            'Login successful!',
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'MainTabs' }],
+                  });
+                }
               }
-            }
-          ]
-        );
+            ]
+          );
+        } else {
+          // User doesn't have email, DON'T set isLoggedIn to true yet
+          // Just store token and user data
+          dispatch(setAuthData({
+            token: access,
+            refreshToken: refreshToken,
+            userData: user
+          }));
+
+          // Navigate to CompleteProfileScreen
+          Alert.alert(
+            'Success',
+            'OTP verified! Please complete your profile.',
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  navigation.navigate('profile', { phone: phoneNumber });
+                }
+              }
+            ]
+          );
+        }
       } else {
         // API returned error
         const errorMessage = result.data?.message || result.data?.error || 'Invalid OTP. Please try again.';

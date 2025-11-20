@@ -1,7 +1,7 @@
 import { create } from "apisauce";
 import { store } from "../redux/store";
 
-const baseURL = "https://brochures-lending-date-ski.trycloudflare.com/api/v1/";
+const baseURL = "http://orderpro-env-1.eba-jn6vrmvc.us-east-2.elasticbeanstalk.com/api/v1/";
 
 const apiClient = create({
   baseURL: baseURL,

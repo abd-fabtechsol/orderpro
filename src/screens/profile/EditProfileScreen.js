@@ -18,7 +18,7 @@ import AppButton from '../../components/common/AppButton';
 const EditProfileScreen = () => {
   const dispatch = useDispatch();
   const user = useSelector(state => state.auth.user);
-console.log(user,"fsfsdfsd")
+
   const [name, setName] = useState(user?.name || user?.username || '');
   const [emailValue, setEmailValue] = useState(user?.email || '');
   const [phoneNumber, setPhoneNumber] = useState(user?.phone || user?.phone_number || '');
@@ -127,26 +127,37 @@ console.log(user,"fsfsdfsd")
 
       // Add profile image if selected
       if (profileImage) {
-        const filename = profileImage.uri.split('/').pop();
+        const uri = Platform.OS === 'ios' ? profileImage.uri.replace('file://', '') : profileImage.uri;
+        const filename = uri.split('/').pop();
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `image/${match[1]}` : 'image/jpeg';
 
-        formData.append('dp', {
-          uri: profileImage.uri,
+        const imageData = {
+          uri: Platform.OS === 'android' ? uri : 'file://' + uri,
           name: filename,
           type: type,
-        });
+        };
+
+        formData.append('dp', imageData);
+        console.log('Updating profile with image:', imageData);
+      } else {
+        console.log('Updating profile without image');
       }
 
-      console.log('Updating profile...');
+      const result = await apiClient.patch('users/update_profile/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-      const result = await apiClient.patch('users/update_profile/', formData);
-
-      console.log('Profile Update Result:', result);
+      console.log('Profile Update Result:', JSON.stringify(result));
 
       if (result.ok) {
         // Update user data in Redux
-        if (result.data) {
+        // API returns nested structure: { success, message, data: { user data } }
+        if (result.data?.data) {
+          dispatch(setUser(result.data.data));
+        } else if (result.data) {
           dispatch(setUser(result.data));
         }
 
@@ -167,11 +178,16 @@ console.log(user,"fsfsdfsd")
   // Get current profile image
   const currentProfileImage = profileImage
     ? { uri: profileImage.uri }
+    : user?.dp
+    ? { uri: user.dp }
     : user?.profile_image
     ? { uri: user.profile_image }
     : user?.image
     ? { uri: user.image }
     : Imageprofile;
+
+  console.log('Current user in EditProfile:', JSON.stringify(user, null, 2));
+  console.log('Profile image source:', currentProfileImage);
 
   return (
     <AppView style={styles.container}>
@@ -182,6 +198,7 @@ console.log(user,"fsfsdfsd")
       </View> */}
 
 <View style={styles.profileImageContainer}>
+  
         <Image
           source={currentProfileImage}
           style={styles.profileImage}

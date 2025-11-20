@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -22,17 +22,54 @@ import AppView from './common/AppView';
 import { Ionicons } from "@expo/vector-icons";
 import apiClient from '../api/apiClient';
 import { useSelector } from 'react-redux';
+import { moderateScale } from 'react-native-size-matters';
+import { fonts } from '../constants';
 
-const AddProduct = ({onClose, onSuccess, supplierId}) => {
+const AddProduct = ({onClose, onSuccess, supplierId, editProduct}) => {
+  const isEditMode = !!editProduct;
   const [item, setItem] = useState({ name: '', unit: 'KG', price: '', quantity: '', note: '' });
   const [productImage, setProductImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(supplierId || null);
   const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
+  const [showUnitDropdown, setShowUnitDropdown] = useState(false);
   const {colors, isDarkMode} = useTheme();
 
   // Get suppliers from Redux
   const suppliers = useSelector(state => state.supplier.suppliers);
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (editProduct) {
+      setItem({
+        name: editProduct.name || '',
+        unit: editProduct.unit_type || 'KG',
+        price: editProduct.price?.toString() || '',
+        quantity: editProduct.quantity?.toString() || '',
+        note: editProduct.note || '',
+      });
+      if (editProduct.image) {
+        setProductImage({ uri: editProduct.image });
+      }
+      if (editProduct.supplier) {
+        setSelectedSupplier(typeof editProduct.supplier === 'object' ? editProduct.supplier.id : editProduct.supplier);
+      }
+    }
+  }, [editProduct]);
+
+  // Unit options
+  const unitOptions = [
+    { value: 'KG', label: 'Kilograms' },
+    { value: 'LB', label: 'Pounds' },
+    { value: 'L', label: 'Liters' },
+    { value: 'GAL', label: 'Gallons' },
+    { value: 'PC', label: 'Piece' },
+    { value: 'PK', label: 'Pack' },
+    { value: 'BX', label: 'Box' },
+    { value: 'BG', label: 'Bag' },
+    { value: 'BTL', label: 'Bottle' },
+    { value: 'CN', label: 'Can' },
+  ];
 
   // Image picker functions
   const pickImageFromGallery = async () => {
@@ -134,42 +171,52 @@ const AddProduct = ({onClose, onSuccess, supplierId}) => {
       formData.append('note', item.note.trim());
       formData.append('supplier', selectedSupplier);
 
-      // Add image file with proper format for React Native
-      const uri = Platform.OS === 'ios' ? productImage.uri.replace('file://', '') : productImage.uri;
-      const filename = uri.split('/').pop();
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      // Add image file with proper format for React Native (only if new image is selected)
+      if (productImage.uri && !productImage.uri.startsWith('http')) {
+        const uri = Platform.OS === 'ios' ? productImage.uri.replace('file://', '') : productImage.uri;
+        const filename = uri.split('/').pop();
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
 
-      formData.append('image', {
-        uri: Platform.OS === 'android' ? uri : 'file://' + uri,
-        name: filename,
-        type: type,
-      });
+        formData.append('image', {
+          uri: Platform.OS === 'android' ? uri : 'file://' + uri,
+          name: filename,
+          type: type,
+        });
+      }
 
       console.log('Submitting product:', {
+        mode: isEditMode ? 'edit' : 'add',
         name: item.name.trim(),
         unit_type: item.unit.trim(),
         price: item.price.trim(),
         quantity: item.quantity.trim(),
         note: item.note.trim(),
         supplier: selectedSupplier,
-        imageUri: uri,
-        imageType: type
       });
 
-      // Make API request to suppliers/{supplier_pk}/products/
-      const result = await apiClient.post(`suppliers/${selectedSupplier}/products/`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Make API request - use PATCH for edit, POST for add
+      let result;
+      if (isEditMode) {
+        result = await apiClient.patch(`suppliers/${selectedSupplier}/products/${editProduct.id}/`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      } else {
+        result = await apiClient.post(`suppliers/${selectedSupplier}/products/`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
 
-      console.log('Add Product Result:', JSON.stringify(result));
+      console.log(`${isEditMode ? 'Edit' : 'Add'} Product Result:`, JSON.stringify(result));
 
       if (result.ok) {
         Alert.alert(
           'Success',
-          'Product added successfully!',
+          `Product ${isEditMode ? 'updated' : 'added'} successfully!`,
           [
             {
               text: 'OK',
@@ -184,11 +231,11 @@ const AddProduct = ({onClose, onSuccess, supplierId}) => {
           ]
         );
       } else {
-        const errorMessage = result.data?.message || result.data?.error || 'Failed to add product. Please try again.';
+        const errorMessage = result.data?.message || result.data?.error || `Failed to ${isEditMode ? 'update' : 'add'} product. Please try again.`;
         Alert.alert('Error', errorMessage);
       }
     } catch (error) {
-      console.error('Add Product Error:', error);
+      console.error(`${isEditMode ? 'Edit' : 'Add'} Product Error:`, error);
       Alert.alert('Error', 'Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
@@ -199,7 +246,7 @@ const AddProduct = ({onClose, onSuccess, supplierId}) => {
     <AppView style={styles.container}>
        <View style={styles.header}>
        <View style={styles.dragIndicator} />
-      <AppText style={styles.title}>Add New Item</AppText>
+      <AppText style={styles.title}>{isEditMode ? 'Edit Item' : 'Add New Item'}</AppText>
       <TouchableOpacity
           style={styles.closeIcon}
           onPress={() => onClose()}
@@ -279,6 +326,53 @@ const AddProduct = ({onClose, onSuccess, supplierId}) => {
         </TouchableOpacity>
       </Modal>
 
+      {/* Unit Dropdown Modal */}
+      <Modal
+        visible={showUnitDropdown}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowUnitDropdown(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowUnitDropdown(false)}
+        >
+          <View style={[styles.dropdownContainer, {backgroundColor: colors.background}]}>
+            <View style={styles.dropdownHeader}>
+              <AppText style={styles.dropdownTitle}>Select Unit</AppText>
+              <TouchableOpacity onPress={() => setShowUnitDropdown(false)}>
+                <Ionicons name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
+              {unitOptions.map((unit) => (
+                <TouchableOpacity
+                  key={unit.value}
+                  style={[
+                    styles.unitItem,
+                    {borderBottomColor: colors.border},
+                    item.unit === unit.value && {backgroundColor: colors.cardColor}
+                  ]}
+                  onPress={() => {
+                    setItem({ ...item, unit: unit.value });
+                    setShowUnitDropdown(false);
+                  }}
+                >
+                  <View style={styles.unitInfo}>
+                    <AppText style={styles.unitValue}>{unit.value}</AppText>
+                    <AppText style={styles.unitLabel}>{unit.label}</AppText>
+                  </View>
+                  {item.unit === unit.value && (
+                    <Ionicons name="checkmark-circle" size={24} color="#1DBF72" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       <TouchableOpacity
         style={[styles.uploadButton,{backgroundColor:colors.cardColor,borderColor:colors.border}]}
         onPress={handleImagePicker}
@@ -305,13 +399,16 @@ const AddProduct = ({onClose, onSuccess, supplierId}) => {
           onChangeText={(text) => setItem({ ...item, name: text })}
           editable={!loading}
         />
-        <AppInput
-          style={{width:wp(36)}}
-          placeholder="Unit (KG/L/PCS)"
-          value={item.unit}
-          onChangeText={(text) => setItem({ ...item, unit: text })}
-          editable={!loading}
-        />
+        <TouchableOpacity
+          style={[styles.unitDropdown, {borderColor:colors.border}]}
+          onPress={() => setShowUnitDropdown(true)}
+          disabled={loading}
+        >
+          <AppText style={[styles.unitDropdownText, {color: !item.unit ? colors.placeholder : colors.text}]}>
+            {item.unit || 'Unit'}
+          </AppText>
+          <Ionicons name="chevron-down" size={20} color={colors.placeholder} />
+        </TouchableOpacity>
       </View>
 
       <View style={{flexDirection:"row",justifyContent:"space-between"}}>
@@ -342,7 +439,7 @@ const AddProduct = ({onClose, onSuccess, supplierId}) => {
       />
       </View>
       <AppButton
-        title={loading ? "Saving..." : "Save"}
+        title={loading ? "Saving..." : (isEditMode ? "Update" : "Save")}
         style={{marginBottom:hp(2), opacity: loading ? 0.7 : 1}}
         onPress={loading ? null : handleSave}
         disabled={loading}
@@ -442,6 +539,41 @@ const styles = StyleSheet.create({
   },
   saveButton: { backgroundColor: '#4CAF50', padding: 10, borderRadius: 5, alignItems: 'center' },
   saveText: { color: 'white', fontWeight: 'bold' },
+  unitDropdown: {
+    width: wp(36),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 2,
+    borderRadius: 8,
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: moderateScale(14),
+    marginVertical: moderateScale(6),
+  },
+  unitDropdownText: {
+    fontSize: moderateScale(14),
+    fontFamily: fonts.roboto?.regular || fonts.roboto['regular'],
+    flex: 1,
+  },
+  unitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+  },
+  unitInfo: {
+    flex: 1,
+  },
+  unitValue: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  unitLabel: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 2,
+  },
 });
 
 

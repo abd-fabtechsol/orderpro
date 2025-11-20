@@ -10,7 +10,7 @@ const RootStack = createNativeStackNavigator();
 const MainNavigation = () => {
   // Get authentication state from Redux
   const { isLoggedIn, token } = useSelector((state) => state.auth);
-
+console.log(isLoggedIn, token ,"mainnavi")
   return (
     <>
       {isLoggedIn && token ? (

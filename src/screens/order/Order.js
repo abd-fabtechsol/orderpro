@@ -42,7 +42,9 @@ const Order = () => {
     }
 
     try {
-      const result = await apiClient.get(`orders/?page=${page}`);
+      // Add status filter: A for Active, H for History
+      const statusParam = activeTab === 'Active' ? 'A' : 'H';
+      const result = await apiClient.get(`orders/?status=${statusParam}&page=${page}`);
 
       console.log('Orders Result:', JSON.stringify(result));
 
@@ -77,10 +79,10 @@ const Order = () => {
     }
   };
 
-  // Load orders on component mount
+  // Load orders on component mount and when activeTab changes
   useEffect(() => {
     fetchOrders(1);
-  }, []);
+  }, [activeTab]);
 
   // Handle refresh
   const handleRefresh = () => {
@@ -121,26 +123,28 @@ const Order = () => {
     return 0;
   };
 
-  // Filter orders based on active tab
-  const filteredOrders = orders.filter(order => {
-    const status = order.status?.toLowerCase();
-    if (activeTab === 'Active') {
-      return status !== 'delivered' && status !== 'completed';
-    } else {
-      return status === 'delivered' || status === 'completed';
-    }
-  });
+  // Orders are already filtered by the API based on activeTab
+  // No need for client-side filtering
 
   const renderOrder = ({ item }) => {
     const itemsCount = getItemsCount(item.items);
     const statusDisplay = getStatusDisplay(item.status || 'pending');
     const isPending = item.status?.toLowerCase() === 'pending';
 
+    // Handle supplier which might be an object or string
+    const supplierName = typeof item.supplier === 'object'
+      ? (item.supplier?.name || 'N/A')
+      : (item.supplier || 'N/A');
+
+    const supplierImage = typeof item.supplier === 'object' && item.supplier?.image
+      ? { uri: item.supplier.image }
+      : pic;
+
     return (
       <View style={[styles.card,{backgroundColor:colors.background,borderColor:colors.border}]}>
         <View style={{flexDirection:"row",gap:10,alignItems:"center"}}>
-          <Image source={pic} style={{width: 38, height: 38}} resizeMode="contain" />
-          <AppText style={styles.vendor}>{item.supplier || 'N/A'}</AppText>
+          <Image source={supplierImage} style={{width: 38, height: 38}} resizeMode="contain" />
+          <AppText style={styles.vendor}>{supplierName}</AppText>
         </View>
         <View style={styles.cardHeader}>
           <AppText style={styles.date}>{`Order #${item.id}`}</AppText>
@@ -201,7 +205,7 @@ const Order = () => {
         </View>
       ) : (
         <FlatList
-          data={filteredOrders}
+          data={orders}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderOrder}
           contentContainerStyle={{ paddingBottom: hp(14) }}

@@ -20,6 +20,15 @@ export const authSlice = createSlice({
 			state.notification=payload.userData?.notifications || null
 			state.isLoggedIn = true
 		},
+		setAuthData: (state, { payload }) => {
+			// Store auth data without setting isLoggedIn to true
+			// Used when user needs to complete profile first
+			state.token = payload.token
+			state.refreshToken = payload.refreshToken
+			state.user = payload.userData
+			state.notification = payload.userData?.notifications || null
+			// isLoggedIn remains false
+		},
 		logout: state => {
 			state.token = null
 			state.refreshToken = null
@@ -30,6 +39,8 @@ export const authSlice = createSlice({
 
 		setUser: (state, { payload }) => {
 			state.user = payload
+			// Set isLoggedIn to true when user data is updated (profile completed)
+			state.isLoggedIn = true
 		},
 		setNotification:(state,{payload})=>{
 			console.log("sasdasdasd",payload)
@@ -38,6 +49,6 @@ export const authSlice = createSlice({
 	}
 })
 
-export const { login, logout,setUser ,setNotification} = authSlice.actions
+export const { login, logout, setAuthData, setUser, setNotification } = authSlice.actions
 
 export default authSlice.reducer

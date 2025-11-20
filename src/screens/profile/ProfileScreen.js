@@ -26,6 +26,10 @@ const ProfileScreen = ({ navigation }) => {
   const { colors, isDarkMode } = useTheme();
   const dispatch = useDispatch();
   const user = useSelector(state => state.auth.user);
+
+  console.log('User data in ProfileScreen:', JSON.stringify(user, null, 2));
+  console.log('Profile image URL:', user?.profile_image || user?.image || user?.dp);
+
   return (
     <AppView style={styles.container}>
       <ScrollView
@@ -36,7 +40,12 @@ const ProfileScreen = ({ navigation }) => {
         {/* <ThemeSwitch style={styles.switch} /> */}
         <View style={styles.header}>
           <Image
-            source={user?.profile_image ? { uri: user.profile_image } : user?.image ? { uri: user.image } : qw}
+            source={
+              user?.dp ? { uri: user.dp } :
+              user?.profile_image ? { uri: user.profile_image } :
+              user?.image ? { uri: user.image } :
+              qw
+            }
             style={styles.avatar}
           />
           <AppText style={styles.name}>{user?.name || user?.username || 'User'}</AppText>
@@ -84,7 +93,13 @@ const ProfileScreen = ({ navigation }) => {
           <AppText style={styles.itemText}>Settings</AppText>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={()=>dispatch(logout())}
+        <TouchableOpacity onPress={() => {
+          dispatch(logout());
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Login' }],
+          });
+        }}
           style={[styles.item, { borderWidth: 1, borderColor: colors.border, marginTop: 20 }]}
         >
           <Image source={logouts} style={styles.icon} resizeMode="contain" />

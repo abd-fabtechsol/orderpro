@@ -46,7 +46,7 @@ const OrderOverview = () => {
         try {
             // Format items for API: [{id: productId, quantity: quantity}]
             const orderItems = items.map(item => ({
-                id: item.id,
+                product: item.id,
                 quantity: item.orderQuantity
             }));
 
@@ -54,7 +54,6 @@ const OrderOverview = () => {
                 items: orderItems,
                 supplier: supplierId,
                 total_amount: calculateTotal(),
-                status: 'pending',
                 note: orderNote.trim() || ''
             };
 

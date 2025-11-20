@@ -78,57 +78,6 @@ const initialProducts = [
         new: true,
     },
 ];
-const sampleOrders = [
-    {
-        id: '1',
-        vendor: 'Daily Fresh',
-        orderNo: '#1243',
-        date: '15 - 08 - 2025',
-        total: 100.5,
-        status: 'Pending',
-    },
-    {
-        id: '2',
-        vendor: 'Daily Fresh',
-        orderNo: '#1244',
-        date: '15 - 08 - 2025',
-        total: 100.5,
-        status: 'Delivered',
-    },
-    {
-        id: '3',
-        vendor: 'Daily Fresh',
-        orderNo: '#1243',
-        date: '15 - 08 - 2025',
-        total: 100.5,
-        status: 'Pending',
-    },
-    {
-        id: '4',
-        vendor: 'Daily Fresh',
-        orderNo: '#1244',
-        date: '15 - 08 - 2025',
-        total: 100.5,
-        status: 'Delivered',
-    },
-    {
-        id: '5',
-        vendor: 'Daily Fresh',
-        orderNo: '#1243',
-        date: '15 - 08 - 2025',
-        total: 100.5,
-        status: 'Pending',
-    },
-    {
-        id: '6',
-        vendor: 'Daily Fresh',
-        orderNo: '#1244',
-        date: '15 - 08 - 2025',
-        total: 100.5,
-        status: 'Delivered',
-    },
-];
-
 const VendorScreen = () => {
     const countryCodeSheetRef = useRef();
     const productSheetRef = useRef();
@@ -149,6 +98,9 @@ const VendorScreen = () => {
     const [supplier, setSupplier] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [orders, setOrders] = useState([]);
+    const [ordersLoading, setOrdersLoading] = useState(false);
+    const [editingProduct, setEditingProduct] = useState(null);
 
     // Fetch supplier details from API
     const fetchSupplierDetails = async () => {
@@ -183,11 +135,32 @@ const VendorScreen = () => {
         }
     };
 
+    // Fetch orders from API
+    const fetchOrders = async () => {
+        if (!supplierId) return;
+        setOrdersLoading(true);
+        try {
+            const result = await apiClient.get(`orders/?supplier=${supplierId}`);
+            console.log('Orders Result:', JSON.stringify(result));
+            if (result.ok && result.data) {
+                const ordersData = result.data.results || result.data.data || result.data;
+                if (Array.isArray(ordersData)) {
+                    setOrders(ordersData);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        } finally {
+            setOrdersLoading(false);
+        }
+    };
+
     // Load data on mount
     useEffect(() => {
         if (supplierId) {
             fetchSupplierDetails();
             fetchProducts();
+            fetchOrders();
         }
     }, [supplierId]);
 
@@ -195,7 +168,7 @@ const VendorScreen = () => {
     const handleRefresh = async () => {
         if (!supplierId) return;
         setRefreshing(true);
-        await Promise.all([fetchSupplierDetails(), fetchProducts()]);
+        await Promise.all([fetchSupplierDetails(), fetchProducts(), fetchOrders()]);
         setRefreshing(false);
     };
 
@@ -293,6 +266,11 @@ const VendorScreen = () => {
                         style={{ top: 30, right: 0 }}
                         onClose={() => setMenuVisible1(false)}
                         onDelete={() => handleDeleteProduct(item.id)}
+                        onEdit={() => {
+                            setEditingProduct(item);
+                            setMenuVisible1(false);
+                            productSheetRef?.current?.open();
+                        }}
                     />
                 )}
             </View>
@@ -375,14 +353,47 @@ console.log(isMenuVisible1,"ddddd")
                             />
                         </> :
                             <>
-                                {/* <CardOrder colors={colors} item={sampleOrders[0]}/> */}
-                                <AppText style={{ fontWeight: "600", margin: 10 }}>Active Orders</AppText>
-                                <FlatList
-                                    data={sampleOrders}
-                                    keyExtractor={(item) => item.id}
-                                    renderItem={({ item }) => <CardOrder colors={colors} item={item} />}
-                                    contentContainerStyle={{ paddingBottom: 80 }}
-                                />
+                                {ordersLoading ? (
+                                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                        <ActivityIndicator size="large" color="#1DBF72" />
+                                        <AppText style={{ marginTop: 10, color: '#888' }}>Loading orders...</AppText>
+                                    </View>
+                                ) : orders.length === 0 ? (
+                                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                        <Image source={isDarkMode ? boxw : boxb} style={{ width: 40, height: 40 }} resizeMode="contain" />
+                                        <AppText style={styles.noItem}>No Orders Found</AppText>
+                                        <AppText style={styles.noItemDesc}>You don't have any orders from this supplier yet.</AppText>
+                                    </View>
+                                ) : (
+                                    <>
+                                        <AppText style={{ fontWeight: "600", margin: 10 }}>Active Orders</AppText>
+                                        <FlatList
+                                            data={orders}
+                                            keyExtractor={(item) => item.id?.toString() || item.id}
+                                            renderItem={({ item }) => {
+                                                // Map API data to CardOrder expected format
+                                                const orderData = {
+                                                    ...item,
+                                                    vendor: supplier?.name || item.supplier_name || 'Supplier',
+                                                    orderNo: `#${item.id}`,
+                                                    date: item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB').replace(/\//g, ' - ') : '',
+                                                    total: item.total_amount || 0,
+                                                    status: item.status || 'Pending'
+                                                };
+                                                return <CardOrder colors={colors} item={orderData} navigation={navigation} />;
+                                            }}
+                                            contentContainerStyle={{ paddingBottom: 80 }}
+                                            refreshControl={
+                                                <RefreshControl
+                                                    refreshing={refreshing}
+                                                    onRefresh={handleRefresh}
+                                                    colors={['#1DBF72']}
+                                                    tintColor="#1DBF72"
+                                                />
+                                            }
+                                        />
+                                    </>
+                                )}
                             </>
                         }
                     </>
@@ -446,9 +457,14 @@ console.log(isMenuVisible1,"ddddd")
                 children={
                     <AddProduct
                         supplierId={supplierId}
-                        onClose={() => productSheetRef.current.close()}
+                        editProduct={editingProduct}
+                        onClose={() => {
+                            productSheetRef.current.close();
+                            setEditingProduct(null);
+                        }}
                         onSuccess={() => {
                             fetchProducts();
+                            setEditingProduct(null);
                         }}
                     />
                 }

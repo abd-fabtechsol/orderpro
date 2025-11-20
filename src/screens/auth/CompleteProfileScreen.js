@@ -175,17 +175,28 @@ const CompleteProfileScreen = () => {
 
       // Add profile image if selected
       if (profileImage) {
-        const filename = profileImage.uri.split('/').pop();
-        const match = /\.(\w+)$/.exec(filename);
-        const type = match ? `image/${match[1]}` : 'image/jpeg';
+        // const filename = profileImage.uri.split('/').pop();
+        // const match = /\.(\w+)$/.exec(filename);
+        // const type = match ? `image/${match[1]}` : 'image/jpeg';
 
-        formData.append('dp', {
-          uri: profileImage.uri,
-          name: filename,
-          type: type,
-        });
-      }
+      //   formData.append('dp', {
+      //     uri: profileImage.uri,
+      //     name: filename,
+      //     type: type,
+      //   });
+      // }
 
+const uri = Platform.OS === 'ios' ? profileImage.uri.replace('file://', '') : profileImage.uri;
+      const filename = uri.split('/').pop();
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+
+formData.append('dp', {
+        uri: Platform.OS === 'android' ? uri : 'file://' + uri,
+        name: filename,
+        type: type,
+      });}
       console.log('Submitting profile update...');
 
       // Call API with FormData
@@ -197,7 +208,10 @@ const CompleteProfileScreen = () => {
 
       if (result.ok) {
         // Update user data in Redux
-        if (result.data) {
+        // API returns nested structure: { success, message, data: { user data } }
+        if (result.data?.data) {
+          dispatch(setUser(result.data.data));
+        } else if (result.data) {
           dispatch(setUser(result.data));
         }
 

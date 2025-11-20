@@ -1,19 +1,66 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 import ReportsHeader from '../../components/ReportsHeader';
 import AppView from '../../components/common/AppView';
 import { useTheme } from '../../context/ThemeContext';
 import AppText from '../../components/common/AppText';
+import apiClient from '../../api/apiClient';
 
 const screenWidth = Dimensions.get('window').width;
 
 const ReportsScreen = () => {
   const [period, setPeriod] = useState('Today');
+  const { colors } = useTheme();
 
-  const { colors } = useTheme(); // 👈 access theme colors
+  // API state
+  const [reportData, setReportData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [suppliersCount, setSuppliersCount] = useState(0);
+  const [ordersCount, setOrdersCount] = useState(0);
 
-  // Mock data
+  // Map period to API parameter
+  const periodToApiParam = {
+    'Today': 'd',
+    'Week': 'w',
+    'Month': 'm',
+    'Year': 'y',
+  };
+
+  // Fetch report data from API
+  const fetchReportData = async (selectedPeriod) => {
+    setLoading(true);
+    try {
+      const apiPeriod = periodToApiParam[selectedPeriod];
+      const result = await apiClient.get(`orders/report/?period=${apiPeriod}`);
+
+      console.log('Report Result for period', selectedPeriod, ':', JSON.stringify(result, null, 2));
+
+      if (result.ok && result.data) {
+        console.log('Chart data from API:', result.data);
+        setReportData(result.data);
+
+        // Update stats if available in response
+        if (result.data.suppliers_count !== undefined) {
+          setSuppliersCount(result.data.suppliers_count);
+        }
+        if (result.data.orders_count !== undefined) {
+          setOrdersCount(result.data.orders_count);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching report data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data when period changes
+  useEffect(() => {
+    fetchReportData(period);
+  }, [period]);
+
+  // Mock data (fallback)
   const chartDataByTab = {
     Today: [5, 8, 6, 9, 4, 7, 3],
     Week: [2, 4, 8, 12, 6, 10, 7],
@@ -28,14 +75,68 @@ const ReportsScreen = () => {
     Year: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
   };
 
-  const chartData = {
-    labels: labelsByTab[period],
-    datasets: [
-      {
-        data: chartDataByTab[period],
-      },
-    ],
+  // Process API data for chart
+  const getChartData = () => {
+    if (reportData) {
+      // Try different possible API response structures
+      let labels = [];
+      let values = [];
+
+      // Check if reportData itself is an array (direct array response)
+      if (Array.isArray(reportData)) {
+        console.log('API returned direct array:', reportData);
+        labels = reportData.map(item => item.label || item.day || item.month || item.name || item.period);
+        values = reportData.map(item => item.count || item.orders || item.value || 0);
+      }
+      // Check for chart_data object
+      else if (reportData.chart_data) {
+        labels = reportData.chart_data.labels || [];
+        values = reportData.chart_data.values || reportData.chart_data.data || [];
+      }
+      // Check for direct arrays (days, months, etc.)
+      else if (reportData.days && Array.isArray(reportData.days)) {
+        // Week period returns days array
+        labels = reportData.days.map(day => day.label || day.day || day.name);
+        values = reportData.days.map(day => day.count || day.orders || day.value || 0);
+      }
+      else if (reportData.months && Array.isArray(reportData.months)) {
+        // Month/Year period returns months array
+        labels = reportData.months.map(month => month.label || month.month || month.name);
+        values = reportData.months.map(month => month.count || month.orders || month.value || 0);
+      }
+      // Check for data array property
+      else if (reportData.data && Array.isArray(reportData.data)) {
+        labels = reportData.data.map(item => item.label || item.name || item.period);
+        values = reportData.data.map(item => item.count || item.orders || item.value || 0);
+      }
+
+      console.log('Processed chart - Labels:', labels, 'Values:', values);
+
+      // Only use API data if we have valid labels and values
+      if (labels.length > 0 && values.length > 0) {
+        return {
+          labels: labels,
+          datasets: [
+            {
+              data: values,
+            },
+          ],
+        };
+      }
+    }
+
+    // Fallback to mock data
+    return {
+      labels: labelsByTab[period],
+      datasets: [
+        {
+          data: chartDataByTab[period],
+        },
+      ],
+    };
   };
+
+  const chartData = getChartData();
 
   // 👇 Use theme colors for chart
   const chartConfig = {
@@ -57,16 +158,27 @@ const ReportsScreen = () => {
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Stats Row */}
-        <View style={[styles.statsRow]}>
-          <View style={[styles.statsBox, { borderColor: colors.border }]}>
-            <AppText style={[styles.statsValue, { color: colors.text }]}>15</AppText>
-            <AppText style={[styles.statsLabel, { color: colors.text }]}>Suppliers</AppText>
+        {loading ? (
+          <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#1DBF72" />
+            <AppText style={{ marginTop: 10, color: '#888' }}>Loading report data...</AppText>
           </View>
-          <View style={[styles.statsBox, { borderColor: colors.border }]}>
-            <AppText style={[styles.statsValue, { color: colors.text }]}>109</AppText>
-            <AppText style={[styles.statsLabel, { color: colors.text }]}>Orders</AppText>
+        ) : (
+          <View style={[styles.statsRow]}>
+            <View style={[styles.statsBox, { borderColor: colors.border }]}>
+              <AppText style={[styles.statsValue, { color: colors.text }]}>
+                {suppliersCount || reportData?.suppliers_count || 0}
+              </AppText>
+              <AppText style={[styles.statsLabel, { color: colors.text }]}>Suppliers</AppText>
+            </View>
+            <View style={[styles.statsBox, { borderColor: colors.border }]}>
+              <AppText style={[styles.statsValue, { color: colors.text }]}>
+                {ordersCount || reportData?.orders_count || 0}
+              </AppText>
+              <AppText style={[styles.statsLabel, { color: colors.text }]}>Orders</AppText>
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Filters */}
         <View style={styles.filters}>
@@ -93,43 +205,55 @@ const ReportsScreen = () => {
         </View>
 
         {/* Chart */}
-        <View style={[styles.chart, { borderColor: colors.border }]}>
-          <AppText style={[styles.sectionTitle, { color: colors.text }]}>
-            Order Overview
-          </AppText>
-          <BarChart
-            data={chartData}
-            width={screenWidth - 32}
-            height={220}
-            chartConfig={chartConfig}
-            fromZero
-            style={{ borderRadius: 8 }}
-          />
-        </View>
+        {!loading && (
+          <View style={[styles.chart, { borderColor: colors.border }]}>
+            <AppText style={[styles.sectionTitle, { color: colors.text }]}>
+              Order Overview
+            </AppText>
+            <BarChart
+              data={chartData}
+              width={screenWidth - 32}
+              height={220}
+              chartConfig={chartConfig}
+              fromZero
+              style={{ borderRadius: 8 }}
+            />
+          </View>
+        )}
 
         {/* Top Products */}
-        <AppText style={[styles.sectionTitle, { color: colors.text }]}>
-          Top Products
-        </AppText>
-        <View style={[styles.table, { borderColor: colors.border }]}>
-          <View style={styles.tableRowHeader}>
-            <AppText style={[styles.tableHeader, { color: colors.text }]}>Supplier</AppText>
-            <AppText style={[styles.tableHeader, { color: colors.text }]}>Product</AppText>
-            <AppText style={[styles.tableHeader, { color: colors.text }]}>Qty</AppText>
-          </View>
+        {!loading && (
+          <>
+            <AppText style={[styles.sectionTitle, { color: colors.text }]}>
+              Top Products
+            </AppText>
+            <View style={[styles.table, { borderColor: colors.border }]}>
+              <View style={styles.tableRowHeader}>
+                <AppText style={[styles.tableHeader, { color: colors.text }]}>Supplier</AppText>
+                <AppText style={[styles.tableHeader, { color: colors.text }]}>Product</AppText>
+                <AppText style={[styles.tableHeader, { color: colors.text }]}>Qty</AppText>
+              </View>
 
-          {[
-            { supplier: 'Green Mart', product: 'Tomato', qty: '120kg' },
-            { supplier: 'Amin Hotel', product: 'Chicken', qty: '100kg' },
-            { supplier: 'Daily Fresh', product: 'Milk', qty: '90L' },
-          ].map((item, index) => (
-            <View key={index} style={styles.tableRow}>
-              <AppText style={[styles.tableCell, { color: colors.text }]}>{item.supplier}</AppText>
-              <AppText style={[styles.tableCell, { color: colors.text }]}>{item.product}</AppText>
-              <AppText style={[styles.tableCell, { color: colors.text }]}>{item.qty}</AppText>
+              {(reportData?.top_products || [
+                { supplier: 'Green Mart', product: 'Tomato', qty: '120kg' },
+                { supplier: 'Amin Hotel', product: 'Chicken', qty: '100kg' },
+                { supplier: 'Daily Fresh', product: 'Milk', qty: '90L' },
+              ]).map((item, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <AppText style={[styles.tableCell, { color: colors.text }]}>
+                    {item.supplier || item.supplier_name || 'N/A'}
+                  </AppText>
+                  <AppText style={[styles.tableCell, { color: colors.text }]}>
+                    {item.product || item.product_name || 'N/A'}
+                  </AppText>
+                  <AppText style={[styles.tableCell, { color: colors.text }]}>
+                    {item.qty || item.quantity || '0'}
+                  </AppText>
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
+          </>
+        )}
       </ScrollView>
     </AppView>
   );
