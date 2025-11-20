@@ -224,6 +224,11 @@ const VendorScreen = () => {
             ? `$${item.price}/${item.unit_type}`
             : item.price;
 
+        // Calculate remaining quantity
+        const orderedQty = parseInt(orderQuantities[item.id]) || 0;
+        const currentStock = item.quantity || 0;
+        const remainingQty = currentStock - orderedQty;
+
         return (
             <View style={[styles.productCard, { borderColor: colors.border }]}>
                 <View style={{ flex: 1, marginLeft: 10 }}>
@@ -247,14 +252,15 @@ const VendorScreen = () => {
                     </View>
 
 
-                        <AppText style={styles.productLastOrder}>
-                            Last Order: {item.lastOrder} | Remaining: {item.remaining}
+                        <AppText style={[styles.productLastOrder, { color: remainingQty < 0 ? '#EF4444' : colors.text }]}>
+                             Last Order  :  {item?.lastorder} | Remaining: {remainingQty} {item.unit_type}
+                            {/* CURRENT STOCK : {currentStock} {item.unit_type} | Remaining: {remainingQty} {item.unit_type} */}
                         </AppText>
 
                     <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                         {/* <AppInput placeholder="Enter remain qty" style={{ width: wp(42) }} /> */}
                         <AppInput
-                            placeholder="Enter new qty"
+                            placeholder="Enter order qty"
                             keyboardType="numeric"
                             value={orderQuantities[item.id] || ''}
                             onChangeText={(text) => handleQuantityChange(item.id, text)}
@@ -276,7 +282,7 @@ const VendorScreen = () => {
             </View>
         );
     };
-console.log(isMenuVisible1,"ddddd")
+
     return (
         <TouchableWithoutFeedback onPress={() => setMenuVisible1(false)}>
             <AppView style={styles.container}>
@@ -285,29 +291,30 @@ console.log(isMenuVisible1,"ddddd")
                 <Header />
 
             {/* Vendor Info */}
-            <View style={[styles.vendorInfo, { flex: 1 }]}>
-                <Image source={{ uri: supplier?.image || vendorData.image }} style={styles.vendorImage} />
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-
-                    <AppText style={styles.vendorName}>{supplier?.name || vendorData.name}</AppText>
-                    <View style={styles.statusContainer}>
-                        <AppText style={styles.statusText}>
-                            {supplier?.is_active !== undefined ? (supplier.is_active ? 'Open' : 'Closed') : vendorData.status}
-                        </AppText>
+            {supplier && (
+                <View style={[styles.vendorInfo, { flex: 1 }]}>
+                    <Image source={{ uri: supplier.image }} style={styles.vendorImage} />
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                        <AppText style={styles.vendorName}>{supplier.name}</AppText>
+                        <View style={styles.statusContainer}>
+                            <AppText style={styles.statusText}>
+                                {supplier.is_active ? 'Open' : 'Closed'}
+                            </AppText>
+                        </View>
+                    </View>
+                    <AppText style={styles.vendorTiming}>
+                        {supplier.open_time && supplier.close_time
+                            ? `${formatTime(supplier.open_time)} – ${formatTime(supplier.close_time)}`
+                            : 'Hours not available'}
+                    </AppText>
+                    <View style={styles.phoneContainer}>
+                        <AppText style={styles.vendorPhone}>{supplier.phone}</AppText>
+                        <TouchableOpacity>
+                            <Ionicons name="copy-outline" size={20} color="gray" />
+                        </TouchableOpacity>
                     </View>
                 </View>
-                <AppText style={styles.vendorTiming}>
-                    {supplier?.open_time && supplier?.close_time
-                        ? `${formatTime(supplier.open_time)} – ${formatTime(supplier.close_time)}`
-                        : vendorData.timing}
-                </AppText>
-                <View style={styles.phoneContainer}>
-                    <AppText style={styles.vendorPhone}>{supplier?.phone || vendorData.phone}</AppText>
-                    <TouchableOpacity>
-                        <Ionicons name="copy-outline" size={20} color="gray" />
-                    </TouchableOpacity>
-                </View>
-            </View>
+            )}
             <View style={{ flex: 5, justifyContent: "center" }}>
                 {loading && products.length === 0 ? (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
