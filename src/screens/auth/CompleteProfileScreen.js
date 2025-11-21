@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Alert, ActionSheetIOS, Platform } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, ActionSheetIOS, Platform } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '../../context/ThemeContext';
 import { useLoading } from '../../context/LoadingContext';
@@ -24,10 +24,13 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import apiClient from '../../api/apiClient';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../redux/authSlice';
+import CustomAlert from '../../components/common/CustomAlert';
+import { useCustomAlert } from '../../hooks/useCustomAlert';
 
 const CompleteProfileScreen = () => {
   const { colors } = useTheme();
   const { showLoading, hideLoading } = useLoading();
+  const { alertConfig, hideAlert, showSuccess, showError, showAlert } = useCustomAlert();
   const navigation = useNavigation();
   const route = useRoute();
   const dispatch = useDispatch();
@@ -71,7 +74,7 @@ const CompleteProfileScreen = () => {
     const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (cameraStatus !== 'granted' || libraryStatus !== 'granted') {
-      Alert.alert('Permission Required', 'Camera and photo library permissions are required to upload a profile picture.');
+      showError('Camera and photo library permissions are required to upload a profile picture.', 'Permission Required');
       return false;
     }
     return true;
@@ -125,35 +128,35 @@ const CompleteProfileScreen = () => {
         }
       );
     } else {
-      Alert.alert(
-        'Profile Picture',
-        'Choose an option',
-        [
+      showAlert({
+        title: 'Profile Picture',
+        message: 'Choose an option',
+        type: 'info',
+        buttons: [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Take Photo', onPress: pickImageFromCamera },
           { text: 'Choose from Gallery', onPress: pickImageFromGallery },
         ],
-        { cancelable: true }
-      );
+      });
     }
   };
 
   const handleFinish = async () => {
     // Validation
     if (!name || name.trim().length === 0) {
-      Alert.alert('Error', 'Please enter your name');
+      showError('Please enter your name');
       return;
     }
 
     if (!emailValue || emailValue.trim().length === 0) {
-      Alert.alert('Error', 'Please enter your email');
+      showError('Please enter your email');
       return;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailValue)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      showError('Please enter a valid email address');
       return;
     }
 
@@ -162,7 +165,7 @@ const CompleteProfileScreen = () => {
     console.log('Token value:', token);
 
     if (!token) {
-      Alert.alert('Error', 'Authentication token not found. Please try logging in again.');
+      showError('Authentication token not found. Please try logging in again.');
       return;
     }
 
@@ -216,28 +219,23 @@ formData.append('dp', {
           dispatch(setUser(result.data));
         }
 
-        Alert.alert(
-          'Success',
+        showSuccess(
           'Profile updated successfully!',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: 'MainTabs' }],
-                });
-              },
-            },
-          ]
+          'Success',
+          () => {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'MainTabs' }],
+            });
+          }
         );
       } else {
         const errorMessage = result.data?.message || result.data?.error || 'Failed to update profile. Please try again.';
-        Alert.alert('Error', errorMessage);
+        showError(errorMessage);
       }
     } catch (error) {
       console.error('Profile Update Error:', error);
-      Alert.alert('Error', 'Network error. Please check your connection and try again.');
+      showError('Network error. Please check your connection and try again.');
     } finally {
       hideLoading();
     }
@@ -331,6 +329,14 @@ formData.append('dp', {
                 }
                 wrapperColor={"red"}
             />
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        type={alertConfig.type}
+        onClose={hideAlert}
+      />
     </AppView>
   );
 };

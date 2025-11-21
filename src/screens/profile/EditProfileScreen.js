@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Alert, Platform, ActionSheetIOS } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Platform, ActionSheetIOS } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../redux/authSlice';
@@ -15,10 +15,13 @@ import email from "../../../assets/email.png"
 import Imageprofile from "../../../assets/Image-profile.png";
 import camra from "../../../assets/camra.png";
 import AppButton from '../../components/common/AppButton';
+import CustomAlert from '../../components/common/CustomAlert';
+import { useCustomAlert } from '../../hooks/useCustomAlert';
 
 const EditProfileScreen = () => {
   const dispatch = useDispatch();
   const { showLoading, hideLoading } = useLoading();
+  const { alertConfig, hideAlert, showSuccess, showError, showAlert } = useCustomAlert();
   const user = useSelector(state => state.auth.user);
 
   const [name, setName] = useState(user?.name || user?.username || '');
@@ -32,7 +35,7 @@ const EditProfileScreen = () => {
     const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (cameraStatus !== 'granted' || libraryStatus !== 'granted') {
-      Alert.alert('Permission Required', 'Camera and photo library permissions are required to upload a profile picture.');
+      showError('Camera and photo library permissions are required to upload a profile picture.', 'Permission Required');
       return false;
     }
     return true;
@@ -86,35 +89,35 @@ const EditProfileScreen = () => {
         }
       );
     } else {
-      Alert.alert(
-        'Profile Picture',
-        'Choose an option',
-        [
+      showAlert({
+        title: 'Profile Picture',
+        message: 'Choose an option',
+        type: 'info',
+        buttons: [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Take Photo', onPress: pickImageFromCamera },
           { text: 'Choose from Gallery', onPress: pickImageFromGallery },
         ],
-        { cancelable: true }
-      );
+      });
     }
   };
 
   const handleUpdateProfile = async () => {
     // Validation
     if (!name || name.trim().length === 0) {
-      Alert.alert('Error', 'Please enter your name');
+      showError('Please enter your name');
       return;
     }
 
     if (!emailValue || emailValue.trim().length === 0) {
-      Alert.alert('Error', 'Please enter your email');
+      showError('Please enter your email');
       return;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailValue)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      showError('Please enter a valid email address');
       return;
     }
 
@@ -162,15 +165,15 @@ const EditProfileScreen = () => {
           dispatch(setUser(result.data));
         }
 
-        Alert.alert('Success', 'Profile updated successfully!');
+        showSuccess('Profile updated successfully!');
         setProfileImage(null); // Clear selected image after successful update
       } else {
         const errorMessage = result.data?.message || result.data?.error || 'Failed to update profile. Please try again.';
-        Alert.alert('Error', errorMessage);
+        showError(errorMessage);
       }
     } catch (error) {
       console.error('Profile Update Error:', error);
-      Alert.alert('Error', 'Network error. Please check your connection and try again.');
+      showError('Network error. Please check your connection and try again.');
     } finally {
       hideLoading();
     }
@@ -234,6 +237,14 @@ const EditProfileScreen = () => {
       <AppButton
         title="Update profile"
         onPress={handleUpdateProfile}
+      />
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        type={alertConfig.type}
+        onClose={hideAlert}
       />
     </AppView>
   );

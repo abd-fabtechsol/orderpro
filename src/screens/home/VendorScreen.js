@@ -37,6 +37,8 @@ import AddProduct from '../../components/AddProduct';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ContextMenu from '../../components/ContextMenu';
 import apiClient from '../../api/apiClient';
+import CustomAlert from '../../components/common/CustomAlert';
+import { useCustomAlert } from '../../hooks/useCustomAlert';
 
 
 const vendorData = {
@@ -92,6 +94,7 @@ const VendorScreen = () => {
     const [orderQuantities, setOrderQuantities] = useState({}); // Track quantities for each product
     const navigation = useNavigation()
     const route = useRoute();
+    const { alertConfig, hideAlert, showSuccess, showError, showConfirm } = useCustomAlert();
 
     // Get supplier ID from navigation params
     const supplierId = route.params?.supplierId;
@@ -183,36 +186,28 @@ const VendorScreen = () => {
 
     // Delete product function
     const handleDeleteProduct = async (productId) => {
-        Alert.alert(
-            'Delete Product',
+        showConfirm(
             'Are you sure you want to delete this product?',
-            [
-                {
-                    text: 'Cancel',
-                    style: 'cancel'
-                },
-                {
-                    text: 'Delete',
-                    style: 'destructive',
-                    onPress: async () => {
-                        showLoading('Deleting product...');
-                        try {
-                            const result = await apiClient.delete(`suppliers/${supplierId}/products/${productId}/`);
-                            if (result.ok) {
-                                Alert.alert('Success', 'Product deleted successfully');
-                                fetchProducts(); // Refresh the products list
-                            } else {
-                                Alert.alert('Error', 'Failed to delete product. Please try again.');
-                            }
-                        } catch (error) {
-                            console.error('Error deleting product:', error);
-                            Alert.alert('Error', 'Network error. Please check your connection and try again.');
-                        } finally {
-                            hideLoading();
-                        }
+            async () => {
+                showLoading('Deleting product...');
+                try {
+                    const result = await apiClient.delete(`suppliers/${supplierId}/products/${productId}/`);
+                    if (result.ok) {
+                        showSuccess('Product deleted successfully');
+                        fetchProducts(); // Refresh the products list
+                    } else {
+                        showError('Failed to delete product. Please try again.');
                     }
+                } catch (error) {
+                    console.error('Error deleting product:', error);
+                    showError('Network error. Please check your connection and try again.');
+                } finally {
+                    hideLoading();
                 }
-            ]
+            },
+            'Delete Product',
+            'Delete',
+            'Cancel'
         );
     };
     // Handle quantity change
@@ -414,25 +409,42 @@ const VendorScreen = () => {
 
             {/* Continue Button */}
             <View style={{ flex: 0.5, justifyContent: "flex-end", }}>
+                <AppButton
+                    title="Continue"
+                    disabled={
+                        // Disable if any item exceeds stock
+                        products.some(product => {
+                            const orderedQty = parseInt(orderQuantities[product.id]) || 0;
+                            const currentStock = product.quantity || 0;
+                            return orderedQty > currentStock;
+                        })
+                    }
+                    style={{
+                        opacity: products.some(product => {
+                            const orderedQty = parseInt(orderQuantities[product.id]) || 0;
+                            const currentStock = product.quantity || 0;
+                            return orderedQty > currentStock;
+                        }) ? 0.5 : 1
+                    }}
+                    onPress={() => {
+                        // Filter products that have quantities entered
+                        const orderItems = products
+                            .filter(product => orderQuantities[product.id] && parseInt(orderQuantities[product.id]) > 0)
+                            .map(product => ({
+                                ...product,
+                                orderQuantity: parseInt(orderQuantities[product.id])
+                            }));
 
-                <AppButton title="Continue" onPress={() => {
-                    // Filter products that have quantities entered
-                    const orderItems = products
-                        .filter(product => orderQuantities[product.id] && parseInt(orderQuantities[product.id]) > 0)
-                        .map(product => ({
-                            ...product,
-                            orderQuantity: parseInt(orderQuantities[product.id])
-                        }));
-
-                    navigation.navigate('ProfileDetails', {
-                        screen: 'overview',
-                        params: {
-                            orderItems,
-                            supplier: supplier || vendorData,
-                            supplierId
-                        }
-                    });
-                }} />
+                        navigation.navigate('ProfileDetails', {
+                            screen: 'overview',
+                            params: {
+                                orderItems,
+                                supplier: supplier || vendorData,
+                                supplierId
+                            }
+                        });
+                    }}
+                />
             </View>
             <TouchableOpacity style={styles.fab} onPress={() => setMenuVisible(true)}>
 
@@ -481,6 +493,14 @@ const VendorScreen = () => {
                     />
                 }
 
+            />
+            <CustomAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={hideAlert}
             />
             </AppView>
         </TouchableWithoutFeedback>

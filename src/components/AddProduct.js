@@ -4,7 +4,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Alert,
   Platform,
   Modal,
   FlatList,
@@ -24,6 +23,8 @@ import apiClient from '../api/apiClient';
 import { useSelector } from 'react-redux';
 import { moderateScale } from 'react-native-size-matters';
 import { fonts } from '../constants';
+import CustomAlert from './common/CustomAlert';
+import { useCustomAlert } from '../hooks/useCustomAlert';
 
 const AddProduct = ({onClose, onSuccess, supplierId, editProduct}) => {
   const isEditMode = !!editProduct;
@@ -34,6 +35,7 @@ const AddProduct = ({onClose, onSuccess, supplierId, editProduct}) => {
   const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
   const [showUnitDropdown, setShowUnitDropdown] = useState(false);
   const {colors, isDarkMode} = useTheme();
+  const { alertConfig, hideAlert, showSuccess, showError, showAlert } = useCustomAlert();
 
   // Get suppliers from Redux
   const suppliers = useSelector(state => state.supplier.suppliers);
@@ -76,7 +78,7 @@ const AddProduct = ({onClose, onSuccess, supplierId, editProduct}) => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'We need camera roll permissions to select an image.');
+        showError('We need camera roll permissions to select an image.', 'Permission Denied');
         return;
       }
 
@@ -92,7 +94,7 @@ const AddProduct = ({onClose, onSuccess, supplierId, editProduct}) => {
       }
     } catch (error) {
       console.error('Error picking image from gallery:', error);
-      Alert.alert('Error', 'Failed to pick image from gallery.');
+      showError('Failed to pick image from gallery.');
     }
   };
 
@@ -100,7 +102,7 @@ const AddProduct = ({onClose, onSuccess, supplierId, editProduct}) => {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'We need camera permissions to take a photo.');
+        showError('We need camera permissions to take a photo.', 'Permission Denied');
         return;
       }
 
@@ -115,47 +117,47 @@ const AddProduct = ({onClose, onSuccess, supplierId, editProduct}) => {
       }
     } catch (error) {
       console.error('Error taking photo:', error);
-      Alert.alert('Error', 'Failed to take photo.');
+      showError('Failed to take photo.');
     }
   };
 
   const handleImagePicker = () => {
-    Alert.alert(
-      'Select Image',
-      'Choose an option',
-      [
+    showAlert({
+      title: 'Select Image',
+      message: 'Choose an option',
+      type: 'info',
+      buttons: [
         { text: 'Camera', onPress: pickImageFromCamera },
         { text: 'Gallery', onPress: pickImageFromGallery },
         { text: 'Cancel', style: 'cancel' }
       ],
-      { cancelable: true }
-    );
+    });
   };
 
   const handleSave = async () => {
     // Validation
     if (!selectedSupplier) {
-      Alert.alert('Validation Error', 'Please select a supplier');
+      showError('Please select a supplier', 'Validation Error');
       return;
     }
     if (!item.name.trim()) {
-      Alert.alert('Validation Error', 'Please enter product name');
+      showError('Please enter product name', 'Validation Error');
       return;
     }
     if (!item.unit.trim()) {
-      Alert.alert('Validation Error', 'Please enter unit type');
+      showError('Please enter unit type', 'Validation Error');
       return;
     }
     if (!item.price.trim()) {
-      Alert.alert('Validation Error', 'Please enter price');
+      showError('Please enter price', 'Validation Error');
       return;
     }
     if (!item.quantity.trim()) {
-      Alert.alert('Validation Error', 'Please enter quantity');
+      showError('Please enter quantity', 'Validation Error');
       return;
     }
     if (!productImage) {
-      Alert.alert('Validation Error', 'Please select product image');
+      showError('Please select product image', 'Validation Error');
       return;
     }
 
@@ -214,29 +216,24 @@ const AddProduct = ({onClose, onSuccess, supplierId, editProduct}) => {
       console.log(`${isEditMode ? 'Edit' : 'Add'} Product Result:`, JSON.stringify(result));
 
       if (result.ok) {
-        Alert.alert(
-          'Success',
+        showSuccess(
           `Product ${isEditMode ? 'updated' : 'added'} successfully!`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                onClose();
-                // Trigger refresh in parent component
-                if (onSuccess) {
-                  onSuccess();
-                }
-              }
+          'Success',
+          () => {
+            onClose();
+            // Trigger refresh in parent component
+            if (onSuccess) {
+              onSuccess();
             }
-          ]
+          }
         );
       } else {
         const errorMessage = result.data?.message || result.data?.error || `Failed to ${isEditMode ? 'update' : 'add'} product. Please try again.`;
-        Alert.alert('Error', errorMessage);
+        showError(errorMessage);
       }
     } catch (error) {
       console.error(`${isEditMode ? 'Edit' : 'Add'} Product Error:`, error);
-      Alert.alert('Error', 'Network error. Please check your connection and try again.');
+      showError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -443,6 +440,14 @@ const AddProduct = ({onClose, onSuccess, supplierId, editProduct}) => {
         style={{marginBottom:hp(2), opacity: loading ? 0.7 : 1}}
         onPress={loading ? null : handleSave}
         disabled={loading}
+      />
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        type={alertConfig.type}
+        onClose={hideAlert}
       />
     </AppView>
   );

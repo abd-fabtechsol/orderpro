@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,Linking,Alert, Platform } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,Linking, Platform } from 'react-native';
 import AppView from '../../components/common/AppView';
 import Header from '../../components/Header';
 import { height, hp, width, wp } from "../../constants/dimension";
@@ -13,6 +13,8 @@ import AppButton from '../../components/common/AppButton';
 import OrderSuccessPopup from './OrderSuccessPopup';
 import { useRoute } from '@react-navigation/native';
 import apiClient from '../../api/apiClient';
+import CustomAlert from '../../components/common/CustomAlert';
+import { useCustomAlert } from '../../hooks/useCustomAlert';
 
 const OrderOverview = () => {
     const{colors}=useTheme()
@@ -22,6 +24,7 @@ const OrderOverview = () => {
     const [items, setItems] = useState(orderItems);
     const [orderNote, setOrderNote] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const { alertConfig, hideAlert, showError, showAlert } = useCustomAlert();
     // Remove item from order
     const handleRemoveItem = (productId) => {
         setItems(prev => prev.filter(item => item.id !== productId));
@@ -37,7 +40,7 @@ const OrderOverview = () => {
     // Submit order to API
     const handleSubmitOrder = async () => {
         if (items.length === 0) {
-            Alert.alert('Error', 'Please add items to your order');
+            showError('Please add items to your order');
             return;
         }
 
@@ -69,11 +72,11 @@ const OrderOverview = () => {
                 setOrderNote('');
             } else {
                 const errorMessage = result.data?.message || result.data?.error || 'Failed to create order. Please try again.';
-                Alert.alert('Error', errorMessage);
+                showError(errorMessage);
             }
         } catch (error) {
             console.error('Order Error:', error);
-            Alert.alert('Error', 'Network error. Please check your connection and try again.');
+            showError('Network error. Please check your connection and try again.');
         } finally {
             setSubmitting(false);
         }
@@ -97,22 +100,26 @@ const OrderOverview = () => {
         await Linking.openURL(url);
       } else {
         // WhatsApp is not installed or URL not supported
-        Alert.alert(
-          "WhatsApp not available",
-          "Please install WhatsApp to continue.",
-          [
+        showAlert({
+          title: "WhatsApp not available",
+          message: "Please install WhatsApp to continue.",
+          type: "warning",
+          buttons: [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
             {
               text: "Open App Store",
               onPress: () =>
                 Linking.openURL("https://apps.apple.com/app/whatsapp-messenger/id310633997"),
             },
-            { text: "Cancel", style: "cancel" },
-          ]
-        );
+          ],
+        });
       }
     } catch (error) {
       console.error("Error opening WhatsApp:", error);
-      Alert.alert("Could not open WhatsApp");
+      showError("Could not open WhatsApp");
     }
   };
 
@@ -205,6 +212,14 @@ const OrderOverview = () => {
       <OrderSuccessPopup
         visible={isPopupVisible}
         onClose={() => setPopupVisible(false)}
+      />
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        type={alertConfig.type}
+        onClose={hideAlert}
       />
     </AppView>
   );

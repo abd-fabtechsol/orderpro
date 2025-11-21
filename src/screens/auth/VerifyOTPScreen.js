@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, TextInput, Alert, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { useDispatch } from 'react-redux';
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
@@ -10,10 +10,13 @@ import AppButton from '../../components/common/AppButton';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import apiClient from '../../api/apiClient';
 import { login, setAuthData } from '../../redux/authSlice';
+import CustomAlert from '../../components/common/CustomAlert';
+import { useCustomAlert } from '../../hooks/useCustomAlert';
 
 const VerifyOTPScreen = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const { showLoading, hideLoading } = useLoading();
+  const { alertConfig, hideAlert, showSuccess, showError } = useCustomAlert();
   const [error, setError] = useState('');
   const [timer, setTimer] = useState(59);
   const navigation = useNavigation();
@@ -66,7 +69,7 @@ const VerifyOTPScreen = () => {
     }
 
     if (!phoneNumber) {
-      Alert.alert('Error', 'Phone number not found. Please go back and try again.');
+      showError('Phone number not found. Please go back and try again.');
       return;
     }
 
@@ -97,20 +100,15 @@ const VerifyOTPScreen = () => {
           }));
 
           // Navigate to MainTabs
-          Alert.alert(
-            'Success',
+          showSuccess(
             'Login successful!',
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'MainTabs' }],
-                  });
-                }
-              }
-            ]
+            'Success',
+            () => {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'MainTabs' }],
+              });
+            }
           );
         } else {
           // User doesn't have email, DON'T set isLoggedIn to true yet
@@ -122,31 +120,26 @@ const VerifyOTPScreen = () => {
           }));
 
           // Navigate to CompleteProfileScreen
-          Alert.alert(
-            'Success',
+          showSuccess(
             'OTP verified! Please complete your profile.',
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  navigation.navigate('profile', { phone: phoneNumber });
-                }
-              }
-            ]
+            'Success',
+            () => {
+              navigation.navigate('profile', { phone: phoneNumber });
+            }
           );
         }
       } else {
         // API returned error
         const errorMessage = result.data?.message || result.data?.error || 'Invalid OTP. Please try again.';
         setError(errorMessage);
-        Alert.alert('Error', errorMessage);
+        showError(errorMessage);
       }
     } catch (error) {
       // Network or other error
       console.error('OTP Verify Error:', error);
       const errorMessage = 'Network error. Please check your connection and try again.';
       setError(errorMessage);
-      Alert.alert('Error', errorMessage);
+      showError(errorMessage);
     } finally {
       // Stop loading
       hideLoading();
@@ -169,14 +162,14 @@ const VerifyOTPScreen = () => {
         setOtp(['', '', '', '', '', '']);
         inputRefs.current[0]?.focus();
 
-        Alert.alert('Success', 'OTP has been resent to your phone number.');
+        showSuccess('OTP has been resent to your phone number.');
       } else {
         const errorMessage = result.data?.message || 'Failed to resend OTP.';
-        Alert.alert('Error', errorMessage);
+        showError(errorMessage);
       }
     } catch (error) {
       console.error('Resend OTP Error:', error);
-      Alert.alert('Error', 'Failed to resend OTP. Please try again.');
+      showError('Failed to resend OTP. Please try again.');
     } finally {
       hideLoading();
     }
@@ -237,6 +230,14 @@ const VerifyOTPScreen = () => {
       <AppButton
         onPress={handleVerifyOTP}
         title="Verify"
+      />
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        type={alertConfig.type}
+        onClose={hideAlert}
       />
     </AppView>
   );

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, Image, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert } from "react-native";
+import { View, Image, TextInput, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
 import Swiper from "react-native-swiper";
 import pic1 from "../../../assets/market.png";
 import pic from "../../../assets/order.png";
@@ -16,6 +16,8 @@ import RbSheetComponet from "../../components/common/RbSheetComponet";
 import { sizes } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
 import apiClient from "../../api/apiClient";
+import CustomAlert from "../../components/common/CustomAlert";
+import { useCustomAlert } from "../../hooks/useCustomAlert";
 const { width } = Dimensions.get("window");
 
 const slides = [
@@ -37,6 +39,7 @@ const LoginScreen = () => {
     const { colors } = useTheme();
     const { showLoading, hideLoading } = useLoading();
     const navigation = useNavigation();
+    const { alertConfig, hideAlert, showSuccess, showError, showAlert } = useCustomAlert();
     const countryCodeSheetRef = useRef();
     const [countryCodeData, setCountryCodeData] = useState(countryCodes);
     const [phoneNumer, setPhoneNumber] = useState(__DEV__ ? '3176144904' : '');
@@ -87,28 +90,23 @@ const LoginScreen = () => {
 
             if (result.ok) {
                 // Success - navigate to OTP screen
-                Alert.alert(
-                    'OTP Sent',
+                showSuccess(
                     'An OTP has been sent to your phone number.',
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => navigation.navigate('otp', { phone: fullPhone }),
-                        },
-                    ]
+                    'OTP Sent',
+                    () => navigation.navigate('otp', { phone: fullPhone })
                 );
             } else {
                 // API returned error
                 const errorMessage = result.data?.message || result.data?.error || 'Failed to send OTP. Please try again.';
                 setPhoneError(errorMessage);
-                Alert.alert('Error', errorMessage);
+                showError(errorMessage);
             }
         } catch (error) {
             // Network or other error
             console.error('Login error:', error);
             const errorMessage = 'Network error. Please check your connection and try again.';
             setPhoneError(errorMessage);
-            Alert.alert('Error', errorMessage);
+            showError(errorMessage);
         } finally {
             // Stop loading
             hideLoading();
@@ -173,7 +171,11 @@ const LoginScreen = () => {
             <AppButton
                 image={googleImage}
                 title="Continue with google"
-                onPress={() => Alert.alert('Coming Soon', 'Google sign-in will be available soon!')}
+                onPress={() => showAlert({
+                    title: 'Coming Soon',
+                    message: 'Google sign-in will be available soon!',
+                    type: 'info',
+                })}
                 style={{
                     marginTop: 10,
                     backgroundColor: "transparent",
@@ -198,7 +200,14 @@ const LoginScreen = () => {
                 }
                 wrapperColor={"red"}
             />
-
+            <CustomAlert
+                visible={alertConfig.visible}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                buttons={alertConfig.buttons}
+                type={alertConfig.type}
+                onClose={hideAlert}
+            />
         </AppView>
     );
 };

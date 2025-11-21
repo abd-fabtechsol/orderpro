@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  Alert,
   ActivityIndicator,
   Platform,
 } from "react-native";
@@ -22,9 +21,12 @@ import time from "../../assets/TimeCircle.png";
 import AppView from "./common/AppView";
 import { useTheme } from "../context/ThemeContext";
 import apiClient from "../api/apiClient";
+import CustomAlert from "./common/CustomAlert";
+import { useCustomAlert } from "../hooks/useCustomAlert";
 
 const AddSupplier = ({onClose, onSuccess}) => {
   const{colors,isDarkMode} = useTheme();
+  const { alertConfig, hideAlert, showSuccess, showError, showAlert } = useCustomAlert();
 
   // Form state
   const [supplierImage, setSupplierImage] = useState(null);
@@ -39,7 +41,7 @@ const AddSupplier = ({onClose, onSuccess}) => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'We need camera roll permissions to select an image.');
+        showError('We need camera roll permissions to select an image.', 'Permission Denied');
         return;
       }
 
@@ -55,7 +57,7 @@ const AddSupplier = ({onClose, onSuccess}) => {
       }
     } catch (error) {
       console.error('Error picking image from gallery:', error);
-      Alert.alert('Error', 'Failed to pick image from gallery.');
+      showError('Failed to pick image from gallery.');
     }
   };
 
@@ -63,7 +65,7 @@ const AddSupplier = ({onClose, onSuccess}) => {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'We need camera permissions to take a photo.');
+        showError('We need camera permissions to take a photo.', 'Permission Denied');
         return;
       }
 
@@ -78,21 +80,21 @@ const AddSupplier = ({onClose, onSuccess}) => {
       }
     } catch (error) {
       console.error('Error taking photo:', error);
-      Alert.alert('Error', 'Failed to take photo.');
+      showError('Failed to take photo.');
     }
   };
 
   const handleImagePicker = () => {
-    Alert.alert(
-      'Select Image',
-      'Choose an option',
-      [
+    showAlert({
+      title: 'Select Image',
+      message: 'Choose an option',
+      type: 'info',
+      buttons: [
         { text: 'Camera', onPress: pickImageFromCamera },
         { text: 'Gallery', onPress: pickImageFromGallery },
         { text: 'Cancel', style: 'cancel' }
       ],
-      { cancelable: true }
-    );
+    });
   };
 
   // Format time to HH:MM:SS format for API
@@ -110,23 +112,23 @@ const AddSupplier = ({onClose, onSuccess}) => {
   const handleAddSupplier = async () => {
     // Validation
     if (!name.trim()) {
-      Alert.alert('Validation Error', 'Please enter supplier name');
+      showError('Please enter supplier name', 'Validation Error');
       return;
     }
     if (!phoneNumber.trim()) {
-      Alert.alert('Validation Error', 'Please enter contact number');
+      showError('Please enter contact number', 'Validation Error');
       return;
     }
     if (!openTime.trim()) {
-      Alert.alert('Validation Error', 'Please enter open time');
+      showError('Please enter open time', 'Validation Error');
       return;
     }
     if (!closeTime.trim()) {
-      Alert.alert('Validation Error', 'Please enter close time');
+      showError('Please enter close time', 'Validation Error');
       return;
     }
     if (!supplierImage) {
-      Alert.alert('Validation Error', 'Please select supplier image');
+      showError('Please select supplier image', 'Validation Error');
       return;
     }
 
@@ -178,29 +180,24 @@ const AddSupplier = ({onClose, onSuccess}) => {
       console.log('Add Supplier Result:', JSON.stringify(result));
 
       if (result.ok) {
-        Alert.alert(
-          'Success',
+        showSuccess(
           'Supplier added successfully!',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                onClose();
-                // Trigger refresh in parent component
-                if (onSuccess) {
-                  onSuccess();
-                }
-              }
+          'Success',
+          () => {
+            onClose();
+            // Trigger refresh in parent component
+            if (onSuccess) {
+              onSuccess();
             }
-          ]
+          }
         );
       } else {
         const errorMessage = result.data?.message || result.data?.error || 'Failed to add supplier. Please try again.';
-        Alert.alert('Error', errorMessage);
+        showError(errorMessage);
       }
     } catch (error) {
       console.error('Add Supplier Error:', error);
-      Alert.alert('Error', 'Network error. Please check your connection and try again.');
+      showError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -299,6 +296,14 @@ const AddSupplier = ({onClose, onSuccess}) => {
           <Text style={styles.addButtonText}>Add Supplier</Text>
         )}
       </TouchableOpacity>
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        type={alertConfig.type}
+        onClose={hideAlert}
+      />
     </AppView>
   )
 }

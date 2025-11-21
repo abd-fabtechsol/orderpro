@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
 import { useTheme } from '../../context/ThemeContext';
 import { height, hp, wp } from '../../constants/dimension';
 import AppButton from '../../components/common/AppButton';
 import apiClient from '../../api/apiClient';
+import CustomAlert from '../../components/common/CustomAlert';
+import { useCustomAlert } from '../../hooks/useCustomAlert';
 
 const InvoiceScreen = ({ navigation, route }) => {
     const{colors}=useTheme()
     const { order } = route?.params || {};
     const [loading, setLoading] = useState(false);
     const [orderStatus, setOrderStatus] = useState(order?.status);
+    const { alertConfig, hideAlert, showSuccess, showError, showConfirm } = useCustomAlert();
 
     // Format date
     const formatDate = (dateString) => {
@@ -44,55 +47,40 @@ const InvoiceScreen = ({ navigation, route }) => {
     // Mark as Paid handler
     const handleMarkAsPaid = async () => {
       if (!order?.id) {
-        Alert.alert('Error', 'Order ID not found');
+        showError('Order ID not found');
         return;
       }
 
       // Show confirmation dialog
-      Alert.alert(
-        'Confirm Payment',
+      showConfirm(
         'Are you sure you want to mark this order as paid?',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-          {
-            text: 'Confirm',
-            onPress: async () => {
-              setLoading(true);
-              try {
-                const result = await apiClient.patch(`orders/${order.id}/`, {
-                  status: 'paid'
-                });
+        async () => {
+          setLoading(true);
+          try {
+            const result = await apiClient.patch(`orders/${order.id}/`, {
+              status: 'paid'
+            });
 
-                console.log('Mark as Paid Result:', JSON.stringify(result));
+            console.log('Mark as Paid Result:', JSON.stringify(result));
 
-                if (result.ok) {
-                  setOrderStatus('paid');
-                  Alert.alert(
-                    'Success',
-                    'Order has been marked as paid successfully',
-                    [
-                      {
-                        text: 'OK',
-                        onPress: () => navigation.goBack(),
-                      },
-                    ]
-                  );
-                } else {
-                  Alert.alert('Error', result.data?.message || 'Failed to update order status');
-                }
-              } catch (error) {
-                console.error('Error marking order as paid:', error);
-                Alert.alert('Error', 'An error occurred while updating the order');
-              } finally {
-                setLoading(false);
-              }
-            },
-          },
-        ],
-        { cancelable: true }
+            if (result.ok) {
+              setOrderStatus('paid');
+              showSuccess('Order has been marked as paid successfully', 'Success', () => {
+                navigation.goBack();
+              });
+            } else {
+              showError(result.data?.message || 'Failed to update order status');
+            }
+          } catch (error) {
+            console.error('Error marking order as paid:', error);
+            showError('An error occurred while updating the order');
+          } finally {
+            setLoading(false);
+          }
+        },
+        'Confirm Payment',
+        'Confirm',
+        'Cancel'
       );
     };
   return (
@@ -162,6 +150,14 @@ const InvoiceScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        type={alertConfig.type}
+        onClose={hideAlert}
+      />
     </AppView>
   );
 };
