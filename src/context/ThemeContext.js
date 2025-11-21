@@ -1,23 +1,31 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { Appearance } from 'react-native';
-import colors from '../constants/colors'; // <-- now using this
+import { useSelector, useDispatch } from 'react-redux';
+import { toggleTheme as toggleThemeAction, setSystemTheme } from '../redux/themeSlice';
+import colors from '../constants/colors';
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const colorScheme = Appearance.getColorScheme(); // 'light' or 'dark'
-  const [isDarkMode, setIsDarkMode] = useState(colorScheme === 'dark');
+  const dispatch = useDispatch();
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
-  const toggleTheme = () => setIsDarkMode(prev => !prev);
+  const toggleTheme = () => {
+    dispatch(toggleThemeAction());
+  };
 
   const theme = isDarkMode ? colors.dark : colors.light;
+
   useEffect(() => {
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      setIsDarkMode(colorScheme === 'dark');
+      // Optionally update theme when system theme changes
+      // Uncomment the line below if you want to sync with system theme automatically
+      // dispatch(setSystemTheme());
     });
 
     return () => subscription?.remove?.(); // safe cleanup
-  }, []);
+  }, [dispatch]);
+
   return (
     <ThemeContext.Provider value={{ isDarkMode, colors: theme, toggleTheme }}>
       {children}

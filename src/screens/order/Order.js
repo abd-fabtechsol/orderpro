@@ -123,11 +123,20 @@ const Order = () => {
     return 0;
   };
 
+  // Get total items quantity
+  const getTotalItemsQuantity = (items) => {
+    if (!items || !Array.isArray(items)) return 0;
+    return items.reduce((total, item) => total + (item.quantity || 0), 0);
+  };
+
   // Orders are already filtered by the API based on activeTab
   // No need for client-side filtering
 
   const renderOrder = ({ item }) => {
-    const itemsCount = getItemsCount(item.items);
+    // API returns 'item' array, not 'items'
+    const itemsArray = item.item || item.items || [];
+    const itemsCount = getItemsCount(itemsArray);
+    const totalQuantity = getTotalItemsQuantity(itemsArray);
     const statusDisplay = getStatusDisplay(item.status || 'pending');
     const isPending = item.status?.toLowerCase() === 'pending';
 
@@ -152,7 +161,7 @@ const Order = () => {
         </View>
         <View style={styles.cardFooter}>
           <AppText style={styles.total}>{`Total: $${item.total_amount || 0}`}</AppText>
-          <AppText style={styles.date}>{`${itemsCount} item${itemsCount !== 1 ? 's' : ''}`}</AppText>
+          <AppText style={styles.date}>{`${itemsCount} item${itemsCount !== 1 ? 's' : ''} (${totalQuantity} qty)`}</AppText>
         </View>
         <View style={styles.statusWrapper}>
           <AppText style={[styles.status, isPending ? styles.pending : styles.delivered,{backgroundColor:colors.cardColor}]}>
@@ -186,7 +195,7 @@ const Order = () => {
       </View>
 
       {/* Filters */}
-      <View style={styles.filters}>
+      {/* <View style={styles.filters}>
         {['Today', 'Week', 'Month', 'Year'].map(f => (
           <TouchableOpacity
             key={f}
@@ -195,7 +204,7 @@ const Order = () => {
             <AppText style={[styles.filterText, period === f && styles.activeFilterText]}>{f}</AppText>
           </TouchableOpacity>
         ))}
-      </View>
+      </View> */}
 
       {/* Orders List */}
       {loading ? (

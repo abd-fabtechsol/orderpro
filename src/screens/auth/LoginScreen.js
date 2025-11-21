@@ -5,6 +5,7 @@ import pic1 from "../../../assets/market.png";
 import pic from "../../../assets/order.png";
 import googleImage from "../../../assets/google.png";
 import { useTheme } from "../../context/ThemeContext";
+import { useLoading } from "../../context/LoadingContext";
 import AppView from "../../components/common/AppView";
 import ThemeSwitch from "../../components/common/ThemeSwitch";
 import AppText from "../../components/common/AppText";
@@ -34,12 +35,12 @@ const slides = [
 
 const LoginScreen = () => {
     const { colors } = useTheme();
+    const { showLoading, hideLoading } = useLoading();
     const navigation = useNavigation();
     const countryCodeSheetRef = useRef();
     const [countryCodeData, setCountryCodeData] = useState(countryCodes);
     const [phoneNumer, setPhoneNumber] = useState(__DEV__ ? '3176144904' : '');
     const [phoneError, setPhoneError] = useState('');
-    const [loading, setLoading] = useState(false);
     const [country, setCountry] = useState({
         id: 222,
         code: 'US',
@@ -76,7 +77,7 @@ const LoginScreen = () => {
         }
 
         // Start loading
-        setLoading(true);
+        showLoading('Sending OTP...');
 
         try {
             const fullPhone = country.callingCode + phoneNumer;
@@ -110,7 +111,7 @@ const LoginScreen = () => {
             Alert.alert('Error', errorMessage);
         } finally {
             // Stop loading
-            setLoading(false);
+            hideLoading();
         }
     }
     return (
@@ -138,8 +139,7 @@ const LoginScreen = () => {
             <View style={[styles.inputContainer, { borderColor: phoneError ? 'red' : colors.border, marginBottom: hp(2) }]}>
                 <TouchableOpacity
                     style={styles.flagWithCode}
-                    onPress={() => countryCodeSheetRef?.current?.open()}
-                    disabled={loading}>
+                    onPress={() => countryCodeSheetRef?.current?.open()}>
                     <AppText style={{ color: colors.text, fontSize: sizes.medium }} >
                         {country.flag}
                         {country.callingCode}
@@ -155,7 +155,6 @@ const LoginScreen = () => {
                         setPhoneError('');
                     }}
                     keyboardType="phone-pad"
-                    editable={!loading}
                     style={[styles.input,{ color: colors.text }]}
                 />
             </View>
@@ -167,21 +166,19 @@ const LoginScreen = () => {
 
             {/* Continue Button */}
             <AppButton
-                onPress={loading ? null : handleSubmit}
-                title={loading ? "Sending OTP..." : "Continue with phone"}
-                style={{ opacity: loading ? 0.7 : 1 }}
+                onPress={handleSubmit}
+                title="Continue with phone"
             />
 
             <AppButton
                 image={googleImage}
                 title="Continue with google"
-                onPress={loading ? null : () => Alert.alert('Coming Soon', 'Google sign-in will be available soon!')}
+                onPress={() => Alert.alert('Coming Soon', 'Google sign-in will be available soon!')}
                 style={{
                     marginTop: 10,
                     backgroundColor: "transparent",
                     borderWidth: 2,
-                    borderColor: colors.border,
-                    opacity: loading ? 0.5 : 1
+                    borderColor: colors.border
                 }}
                 textStyle={{ color: colors.text }}
             />

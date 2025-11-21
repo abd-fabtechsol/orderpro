@@ -3,6 +3,7 @@ import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, Alert, ActionSheetIOS, Platform } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '../../context/ThemeContext';
+import { useLoading } from '../../context/LoadingContext';
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
 import AppButton from '../../components/common/AppButton';
@@ -26,6 +27,7 @@ import { setUser } from '../../redux/authSlice';
 
 const CompleteProfileScreen = () => {
   const { colors } = useTheme();
+  const { showLoading, hideLoading } = useLoading();
   const navigation = useNavigation();
   const route = useRoute();
   const dispatch = useDispatch();
@@ -43,7 +45,6 @@ const CompleteProfileScreen = () => {
   const [name, setName] = useState('');
   const [emailValue, setEmailValue] = useState('');
   const [profileImage, setProfileImage] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const [country, setCountry] = useState({
       id: 222,
@@ -165,7 +166,7 @@ const CompleteProfileScreen = () => {
       return;
     }
 
-    setLoading(true);
+    showLoading('Updating profile...');
 
     try {
       // Create FormData
@@ -238,7 +239,7 @@ formData.append('dp', {
       console.error('Profile Update Error:', error);
       Alert.alert('Error', 'Network error. Please check your connection and try again.');
     } finally {
-      setLoading(false);
+      hideLoading();
     }
   };
 
@@ -274,7 +275,6 @@ formData.append('dp', {
             placeholderTextColor="#9CA3AF"
             value={name}
             onChangeText={setName}
-            editable={!loading}
           />
 
 
@@ -305,16 +305,14 @@ formData.append('dp', {
             onChangeText={setEmailValue}
             keyboardType="email-address"
             autoCapitalize="none"
-            editable={!loading}
           />
       </View>
 
       {/* Button */}
       <View style={styles.footer}>
         <AppButton
-          title={loading ? 'Updating...' : 'Finish'}
-          onPress={loading ? null : handleFinish}
-          style={{ opacity: loading ? 0.7 : 1 }}
+          title="Finish"
+          onPress={handleFinish}
         />
       </View>
       <RbSheetComponet

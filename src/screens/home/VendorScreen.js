@@ -21,6 +21,7 @@ import AppButton from '../../components/common/AppButton';
 import AppView from '../../components/common/AppView';
 import Header from '../../components/Header';
 import { useTheme } from '../../context/ThemeContext';
+import { useLoading } from '../../context/LoadingContext';
 import AppText from '../../components/common/AppText';
 import { hp, wp } from '../../constants/dimension';
 import vertical from "../../../assets/vertical.png"
@@ -83,6 +84,7 @@ const VendorScreen = () => {
     const productSheetRef = useRef();
     const [menuVisible, setMenuVisible] = useState(false)
     const { colors, isDarkMode } = useTheme()
+    const { showLoading, hideLoading } = useLoading()
     const [activeTab, setActiveTab] = useState('Product');
     const [products, setProducts] = useState([]);
     const [isMenuVisible1, setMenuVisible1] = useState(false);
@@ -193,6 +195,7 @@ const VendorScreen = () => {
                     text: 'Delete',
                     style: 'destructive',
                     onPress: async () => {
+                        showLoading('Deleting product...');
                         try {
                             const result = await apiClient.delete(`suppliers/${supplierId}/products/${productId}/`);
                             if (result.ok) {
@@ -204,6 +207,8 @@ const VendorScreen = () => {
                         } catch (error) {
                             console.error('Error deleting product:', error);
                             Alert.alert('Error', 'Network error. Please check your connection and try again.');
+                        } finally {
+                            hideLoading();
                         }
                     }
                 }

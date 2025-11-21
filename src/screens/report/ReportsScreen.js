@@ -21,7 +21,7 @@ const ReportsScreen = () => {
 
   // Map period to API parameter
   const periodToApiParam = {
-    'Today': 'd',
+   
     'Week': 'w',
     'Month': 'm',
     'Year': 'y',
@@ -182,7 +182,7 @@ const ReportsScreen = () => {
 
         {/* Filters */}
         <View style={styles.filters}>
-          {['Today', 'Week', 'Month', 'Year'].map(f => (
+          {[ 'Week', 'Month', 'Year'].map(f => (
             <TouchableOpacity
               key={f}
               onPress={() => setPeriod(f)}

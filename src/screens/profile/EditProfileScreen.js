@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Image, Alert, Platform, ActionSheet
 import * as ImagePicker from 'expo-image-picker';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../redux/authSlice';
+import { useLoading } from '../../context/LoadingContext';
 import apiClient from '../../api/apiClient';
 import AppView from '../../components/common/AppView';
 import Header from '../../components/Header';
@@ -17,13 +18,13 @@ import AppButton from '../../components/common/AppButton';
 
 const EditProfileScreen = () => {
   const dispatch = useDispatch();
+  const { showLoading, hideLoading } = useLoading();
   const user = useSelector(state => state.auth.user);
 
   const [name, setName] = useState(user?.name || user?.username || '');
   const [emailValue, setEmailValue] = useState(user?.email || '');
   const [phoneNumber, setPhoneNumber] = useState(user?.phone || user?.phone_number || '');
   const [profileImage, setProfileImage] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   // Request permissions and pick image
   const requestPermissions = async () => {
@@ -117,7 +118,7 @@ const EditProfileScreen = () => {
       return;
     }
 
-    setLoading(true);
+    showLoading('Updating profile...');
 
     try {
       // Create FormData
@@ -171,7 +172,7 @@ const EditProfileScreen = () => {
       console.error('Profile Update Error:', error);
       Alert.alert('Error', 'Network error. Please check your connection and try again.');
     } finally {
-      setLoading(false);
+      hideLoading();
     }
   };
 
@@ -214,7 +215,6 @@ const EditProfileScreen = () => {
         placeholder="Business or personal name"
         value={name}
         onChangeText={setName}
-        editable={!loading}
       />
       <AppInput
         icon={phone}
@@ -229,13 +229,11 @@ const EditProfileScreen = () => {
         onChangeText={setEmailValue}
         keyboardType="email-address"
         autoCapitalize="none"
-        editable={!loading}
       />
       </View>
       <AppButton
-        title={loading ? 'Updating...' : 'Update profile'}
-        onPress={loading ? null : handleUpdateProfile}
-        style={{ opacity: loading ? 0.7 : 1 }}
+        title="Update profile"
+        onPress={handleUpdateProfile}
       />
     </AppView>
   );

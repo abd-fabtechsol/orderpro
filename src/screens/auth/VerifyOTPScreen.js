@@ -5,6 +5,7 @@ import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
 import { sizes } from '../../constants';
 import { useTheme } from '../../context/ThemeContext';
+import { useLoading } from '../../context/LoadingContext';
 import AppButton from '../../components/common/AppButton';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import apiClient from '../../api/apiClient';
@@ -12,7 +13,7 @@ import { login, setAuthData } from '../../redux/authSlice';
 
 const VerifyOTPScreen = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [loading, setLoading] = useState(false);
+  const { showLoading, hideLoading } = useLoading();
   const [error, setError] = useState('');
   const [timer, setTimer] = useState(59);
   const navigation = useNavigation();
@@ -70,7 +71,7 @@ const VerifyOTPScreen = () => {
     }
 
     // Start loading
-    setLoading(true);
+    showLoading('Verifying OTP...');
     setError('');
 
     try {
@@ -148,14 +149,14 @@ const VerifyOTPScreen = () => {
       Alert.alert('Error', errorMessage);
     } finally {
       // Stop loading
-      setLoading(false);
+      hideLoading();
     }
   };
 
   const handleResendOTP = async () => {
     if (timer > 0) return; // Don't allow resend if timer is still running
 
-    setLoading(true);
+    showLoading('Resending OTP...');
     setError('');
 
     try {
@@ -177,7 +178,7 @@ const VerifyOTPScreen = () => {
       console.error('Resend OTP Error:', error);
       Alert.alert('Error', 'Failed to resend OTP. Please try again.');
     } finally {
-      setLoading(false);
+      hideLoading();
     }
   };
 
@@ -209,7 +210,6 @@ const VerifyOTPScreen = () => {
               value={digit}
               onChangeText={val => handleChange(val, index)}
               onKeyPress={e => handleKeyPress(e, index)}
-              editable={!loading}
               autoFocus={index === 0}
             />
           ))}
@@ -226,7 +226,7 @@ const VerifyOTPScreen = () => {
             Resend code in {timer} sec
           </AppText>
         ) : (
-          <TouchableOpacity onPress={handleResendOTP} disabled={loading}>
+          <TouchableOpacity onPress={handleResendOTP}>
             <AppText style={[styles.resendText, {color: colors.primary, fontSize:sizes.small, fontWeight: '600'}]}>
               Resend OTP
             </AppText>
@@ -235,9 +235,8 @@ const VerifyOTPScreen = () => {
       </View>
 
       <AppButton
-        onPress={loading ? null : handleVerifyOTP}
-        title={loading ? "Verifying..." : "Verify"}
-        style={{ opacity: loading ? 0.7 : 1 }}
+        onPress={handleVerifyOTP}
+        title="Verify"
       />
     </AppView>
   );
