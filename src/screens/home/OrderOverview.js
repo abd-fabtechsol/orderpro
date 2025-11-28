@@ -24,6 +24,7 @@ const OrderOverview = () => {
     const [items, setItems] = useState(orderItems);
     const [orderNote, setOrderNote] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [createdOrder, setCreatedOrder] = useState(null);
     const { alertConfig, hideAlert, showError, showAlert } = useCustomAlert();
     // Remove item from order
     const handleRemoveItem = (productId) => {
@@ -67,6 +68,8 @@ const OrderOverview = () => {
             console.log('Order Result:', JSON.stringify(result));
 
             if (result.ok) {
+                // Store the created order data for invoice
+                setCreatedOrder(result.data);
                 setPopupVisible(true);
                 // Clear order note after successful submission
                 setOrderNote('');
@@ -212,6 +215,7 @@ const OrderOverview = () => {
       <OrderSuccessPopup
         visible={isPopupVisible}
         onClose={() => setPopupVisible(false)}
+        order={createdOrder}
       />
       <CustomAlert
         visible={alertConfig.visible}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext';
 import pic from "../../../assets/dp.png";
 import { hp, width } from '../../constants/dimension';
@@ -83,6 +83,13 @@ const Order = () => {
   useEffect(() => {
     fetchOrders(1);
   }, [activeTab]);
+
+  // Refresh orders when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchOrders(1);
+    }, [activeTab])
+  );
 
   // Handle refresh
   const handleRefresh = () => {

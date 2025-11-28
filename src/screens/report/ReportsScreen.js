@@ -10,7 +10,7 @@ import apiClient from '../../api/apiClient';
 const screenWidth = Dimensions.get('window').width;
 
 const ReportsScreen = () => {
-  const [period, setPeriod] = useState('Today');
+  const [period, setPeriod] = useState('Week');
   const { colors } = useTheme();
 
   // API state
@@ -18,6 +18,7 @@ const ReportsScreen = () => {
   const [loading, setLoading] = useState(true);
   const [suppliersCount, setSuppliersCount] = useState(0);
   const [ordersCount, setOrdersCount] = useState(0);
+  const [topProducts, setTopProducts] = useState([]);
 
   // Map period to API parameter
   const periodToApiParam = {
@@ -27,7 +28,23 @@ const ReportsScreen = () => {
     'Year': 'y',
   };
 
-  // Fetch report data from API
+  // Fetch report detail (suppliers, orders count, top products)
+  const fetchReportDetail = async () => {
+    try {
+      const result = await apiClient.get('orders/report_detail/');
+      console.log('Report Detail Result:', JSON.stringify(result, null, 2));
+
+      if (result.ok && result.data) {
+        setSuppliersCount(result.data.suppliers || 0);
+        setOrdersCount(result.data.orders || 0);
+        setTopProducts(result.data.top_products || []);
+      }
+    } catch (error) {
+      console.error('Error fetching report detail:', error);
+    }
+  };
+
+  // Fetch chart data from API
   const fetchReportData = async (selectedPeriod) => {
     setLoading(true);
     try {
@@ -39,14 +56,6 @@ const ReportsScreen = () => {
       if (result.ok && result.data) {
         console.log('Chart data from API:', result.data);
         setReportData(result.data);
-
-        // Update stats if available in response
-        if (result.data.suppliers_count !== undefined) {
-          setSuppliersCount(result.data.suppliers_count);
-        }
-        if (result.data.orders_count !== undefined) {
-          setOrdersCount(result.data.orders_count);
-        }
       }
     } catch (error) {
       console.error('Error fetching report data:', error);
@@ -55,7 +64,12 @@ const ReportsScreen = () => {
     }
   };
 
-  // Fetch data when period changes
+  // Fetch report detail on mount
+  useEffect(() => {
+    fetchReportDetail();
+  }, []);
+
+  // Fetch chart data when period changes
   useEffect(() => {
     fetchReportData(period);
   }, [period]);
@@ -167,13 +181,13 @@ const ReportsScreen = () => {
           <View style={[styles.statsRow]}>
             <View style={[styles.statsBox, { borderColor: colors.border }]}>
               <AppText style={[styles.statsValue, { color: colors.text }]}>
-                {suppliersCount || reportData?.suppliers_count || 0}
+                {suppliersCount}
               </AppText>
               <AppText style={[styles.statsLabel, { color: colors.text }]}>Suppliers</AppText>
             </View>
             <View style={[styles.statsBox, { borderColor: colors.border }]}>
               <AppText style={[styles.statsValue, { color: colors.text }]}>
-                {ordersCount || reportData?.orders_count || 0}
+                {ordersCount}
               </AppText>
               <AppText style={[styles.statsLabel, { color: colors.text }]}>Orders</AppText>
             </View>
@@ -234,20 +248,20 @@ const ReportsScreen = () => {
                 <AppText style={[styles.tableHeader, { color: colors.text }]}>Qty</AppText>
               </View>
 
-              {(reportData?.top_products || [
-                { supplier: 'Green Mart', product: 'Tomato', qty: '120kg' },
-                { supplier: 'Amin Hotel', product: 'Chicken', qty: '100kg' },
-                { supplier: 'Daily Fresh', product: 'Milk', qty: '90L' },
+              {(topProducts.length > 0 ? topProducts : [
+                { product__supplier__name: 'Green Mart', product_name: 'Tomato', total_quantity: '120kg' },
+                { product__supplier__name: 'Amin Hotel', product_name: 'Chicken', total_quantity: '100kg' },
+                { product__supplier__name: 'Daily Fresh', product_name: 'Milk', total_quantity: '90L' },
               ]).map((item, index) => (
                 <View key={index} style={styles.tableRow}>
                   <AppText style={[styles.tableCell, { color: colors.text }]}>
-                    {item.supplier || item.supplier_name || 'N/A'}
+                    {item.product__supplier__name || 'N/A'}
                   </AppText>
                   <AppText style={[styles.tableCell, { color: colors.text }]}>
-                    {item.product || item.product_name || 'N/A'}
+                    {item.product_name || 'N/A'}
                   </AppText>
                   <AppText style={[styles.tableCell, { color: colors.text }]}>
-                    {item.qty || item.quantity || '0'}
+                    {item.total_quantity || '0'}
                   </AppText>
                 </View>
               ))}

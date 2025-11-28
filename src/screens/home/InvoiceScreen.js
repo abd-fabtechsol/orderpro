@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
@@ -11,10 +11,28 @@ import { useCustomAlert } from '../../hooks/useCustomAlert';
 
 const InvoiceScreen = ({ navigation, route }) => {
     const{colors}=useTheme()
-    const { order } = route?.params || {};
+    const { order: initialOrder } = route?.params || {};
+    const [order, setOrder] = useState(initialOrder);
     const [loading, setLoading] = useState(false);
-    const [orderStatus, setOrderStatus] = useState(order?.status);
+    const [orderStatus, setOrderStatus] = useState(initialOrder?.status);
     const { alertConfig, hideAlert, showSuccess, showError, showConfirm } = useCustomAlert();
+
+    // Fetch latest order data
+    const fetchOrderDetails = async () => {
+      if (!order?.id) return;
+
+      try {
+        const result = await apiClient.get(`orders/${order.id}/`);
+        console.log('Fetch Order Details Result:', JSON.stringify(result));
+
+        if (result.ok && result.data) {
+          setOrder(result.data);
+          setOrderStatus(result.data.status);
+        }
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+      }
+    };
 
     // Format date
     const formatDate = (dateString) => {
@@ -64,9 +82,12 @@ const InvoiceScreen = ({ navigation, route }) => {
             console.log('Mark as Paid Result:', JSON.stringify(result));
 
             if (result.ok) {
-              setOrderStatus('paid');
               showSuccess('Order has been marked as paid successfully', 'Success', () => {
-                navigation.goBack();
+                // Navigate to Order screen (MainTabs -> Order tab)
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'MainTabs', params: { screen: 'Order' } }],
+                });
               });
             } else {
               showError(result.data?.message || 'Failed to update order status');

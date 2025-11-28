@@ -5,7 +5,7 @@ import { Image } from 'react-native';
 import AppText from '../../components/common/AppText';
 import { useTheme } from '../../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
-const OrderSuccessPopup = ({ visible, onClose }) => {
+const OrderSuccessPopup = ({ visible, onClose, order }) => {
     const{colors,isDarkMode} = useTheme();
     const navigation=useNavigation()
   return (
@@ -23,7 +23,7 @@ const OrderSuccessPopup = ({ visible, onClose }) => {
           <AppText style={styles.title}>Order Sent Successfully!</AppText>
           <AppText style={styles.message}>You're order has been sent successfully</AppText>
           <TouchableOpacity  onPress={()=>{
-            navigation.navigate('ProfileDetails',{screen:'InvoiceScreen'})
+            navigation.navigate('ProfileDetails',{screen:'InvoiceScreen', params: { order }})
             onClose()}
             }>
             <AppText style={styles.downloadText}>Download Invoice</AppText>
