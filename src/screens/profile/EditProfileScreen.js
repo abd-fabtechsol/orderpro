@@ -94,7 +94,7 @@ const EditProfileScreen = () => {
         message: 'Choose an option',
         type: 'info',
         buttons: [
-          { text: 'Cancel', style: 'cancel' },
+          // { text: 'Cancel', style: 'cancel' },
           { text: 'Take Photo', onPress: pickImageFromCamera },
           { text: 'Choose from Gallery', onPress: pickImageFromGallery },
         ],

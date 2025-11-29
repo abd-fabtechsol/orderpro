@@ -7,6 +7,7 @@ import {
   Image,
   ActivityIndicator,
   Platform,
+  ActionSheetIOS,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
@@ -85,16 +86,32 @@ const AddSupplier = ({onClose, onSuccess}) => {
   };
 
   const handleImagePicker = () => {
-    showAlert({
-      title: 'Select Image',
-      message: 'Choose an option',
-      type: 'info',
-      buttons: [
-        { text: 'Camera', onPress: pickImageFromCamera },
-        { text: 'Gallery', onPress: pickImageFromGallery },
-        { text: 'Cancel', style: 'cancel' }
-      ],
-    });
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Photo', 'Choose from Gallery'],
+          cancelButtonIndex: 0,
+        },
+        buttonIndex => {
+          if (buttonIndex === 1) {
+            pickImageFromCamera();
+          } else if (buttonIndex === 2) {
+            pickImageFromGallery();
+          }
+        }
+      );
+    } else {
+      showAlert({
+        title: 'Select Image',
+        message: 'Choose an option',
+        type: 'info',
+        buttons: [
+          { text: 'Camera', onPress: pickImageFromCamera },
+          { text: 'Gallery', onPress: pickImageFromGallery },
+          // { text: 'Cancel', style: 'cancel' }
+        ],
+      });
+    }
   };
 
   // Format time to HH:MM:SS format for API

@@ -12,16 +12,32 @@
       "backgroundColor": "#1DBF72"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to camera to take profile pictures and product photos.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select profile pictures and product photos."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1DBF72"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app needs access to your photo library to select profile pictures and product photos.",
+          "cameraPermission": "This app needs access to camera to take profile pictures and product photos."
+        }
+      ]
     ],
     "extra": {
       "eas": {
