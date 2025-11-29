@@ -18,6 +18,8 @@ import { useNavigation } from "@react-navigation/native";
 import apiClient from "../../api/apiClient";
 import CustomAlert from "../../components/common/CustomAlert";
 import { useCustomAlert } from "../../hooks/useCustomAlert";
+import { useDispatch } from "react-redux";
+import { clearToken } from "../../redux/authSlice";
 const { width } = Dimensions.get("window");
 
 const slides = [
@@ -39,6 +41,7 @@ const LoginScreen = () => {
     const { colors } = useTheme();
     const { showLoading, hideLoading } = useLoading();
     const navigation = useNavigation();
+    const dispatch = useDispatch();
     const { alertConfig, hideAlert, showSuccess, showError, showAlert } = useCustomAlert();
     const countryCodeSheetRef = useRef();
     const [countryCodeData, setCountryCodeData] = useState(countryCodes);
@@ -81,6 +84,9 @@ const LoginScreen = () => {
 
         // Start loading
         showLoading('Sending OTP...');
+
+        // Clear token before login API call
+        dispatch(clearToken());
 
         try {
             const fullPhone = country.callingCode + phoneNumer;

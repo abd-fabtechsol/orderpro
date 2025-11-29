@@ -45,10 +45,13 @@ export const authSlice = createSlice({
 		setNotification:(state,{payload})=>{
 			console.log("sasdasdasd",payload)
 			state.notification=payload
+		},
+		clearToken: state => {
+			state.token = null
 		}
 	}
 })
 
-export const { login, logout, setAuthData, setUser, setNotification } = authSlice.actions
+export const { login, logout, setAuthData, setUser, setNotification, clearToken } = authSlice.actions
 
 export default authSlice.reducer
