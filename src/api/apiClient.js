@@ -7,7 +7,15 @@ const apiClient = create({
   baseURL: baseURL,
 });
 
+// Endpoints that should not include auth token
+const publicEndpoints = ['login/',  ];
+
 apiClient.addRequestTransform((request) => {
+  // Check if the request URL is a public endpoint (no token needed)
+  const isPublicEndpoint = publicEndpoints.some(endpoint => request.url.includes(endpoint));
+
+  if (isPublicEndpoint) return;
+
   const authToken = store?.getState()?.auth?.token;
   console.log(authToken,"ffffff34")
   if (!authToken) return;
