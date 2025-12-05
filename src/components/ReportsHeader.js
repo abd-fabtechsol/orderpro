@@ -1,14 +1,19 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import connect from "../../assets/connect.png";
+import { useTheme } from '../context/ThemeContext';
+// NAVARO1 - Light/white text logo for dark mode
+import logoForDarkMode from "../../assets/NAVARO1.png";
+// NAVARO - Dark text logo for light mode
+import logoForLightMode from "../../assets/NAVARO.png";
 import Notification from "../../assets/Notification.png";
 import AppText from './common/AppText';
+
 const ReportsHeader = ({
- 
   notificationCount = 0,
   onNotificationPress,
 }) => {
+  const { isDarkMode } = useTheme();
   const tabs = ['Today', 'Week', 'Month', 'Year'];
 
   return (
@@ -16,9 +21,9 @@ const ReportsHeader = ({
       {/* Top Row: Logo + Title + Notification */}
       <View style={styles.topRow}>
         <View style={styles.logoRow}>
-        <Image source={connect}  style={styles.logo}/>
+        <Image source={isDarkMode ? logoForDarkMode : logoForLightMode} style={styles.logo} resizeMode="contain" />
          
-          <AppText style={styles.title}>OrderPro</AppText>
+          {/* <AppText style={styles.title}>OrderPro</AppText> */}
         </View>
 
         <TouchableOpacity style={styles.bellContainer} onPress={onNotificationPress}>
@@ -56,7 +61,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 38,
+    width: 100,
     height: 38,
     marginRight: 8,
   },
