@@ -121,17 +121,17 @@ const VendorScreen = () => {
     };
 
     // Fetch products from API
-    const fetchProducts = async () => {
+    const fetchProducts = async (showLoader = true) => {
         if (!supplierId) return;
-        setLoading(true);
+        if (showLoader) setLoading(true);
         try {
+            console.log('Fetching products for supplier:', supplierId);
             const result = await apiClient.get(`suppliers/${supplierId}/products/`);
+            console.log('Products Result:', JSON.stringify(result));
             if (result.ok && result.data) {
                 const productData = result.data.results || result.data.data || result.data;
                 // Update display products with API data
-                if (Array.isArray(productData) && productData.length > 0) {
-                    setProducts(productData);
-                }
+                setProducts(Array.isArray(productData) ? productData : []);
             }
         } catch (error) {
             console.error('Error fetching products:', error);
@@ -168,6 +168,17 @@ const VendorScreen = () => {
             fetchOrders();
         }
     }, [supplierId]);
+
+    // Fetch data when tab changes
+    useEffect(() => {
+        if (supplierId) {
+            if (activeTab === 'Product') {
+                fetchProducts(true); // Show loader on tab switch
+            } else if (activeTab === 'Orders') {
+                fetchOrders();
+            }
+        }
+    }, [activeTab]);
 
     // Handle refresh
     const handleRefresh = async () => {

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "orderpro",
+    "name": "NAVARO",
     "slug": "orderpro",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -15,8 +15,10 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to camera to take profile pictures and product photos.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select profile pictures and product photos."
-      }
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select profile pictures and product photos.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.abd.navaro"
     },
     "android": {
       "adaptiveIcon": {
@@ -26,7 +28,8 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [

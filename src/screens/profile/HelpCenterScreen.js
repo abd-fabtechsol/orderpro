@@ -7,7 +7,7 @@ import Header from '../../components/Header';
 import { hp } from '../../constants/dimension';
 
 const faqs = [
-  { q: 'Can I pay suppliers directly through OrderPro?', a: 'No, OrderPro is for tracking only.' },
+  { q: 'Can I pay suppliers directly through NAVARO?', a: 'No, NAVARO is for tracking only.' },
   { q: 'What if my supplier emails me an invoice?', a: 'You can upload it manually.' },
   { q: 'Can I mark an invoice as paid later?', a: 'Yes, from the invoice page.' },
 ];

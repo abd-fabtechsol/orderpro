@@ -23,7 +23,7 @@ const ReportsHeader = ({
         <View style={styles.logoRow}>
         <Image source={isDarkMode ? logoForDarkMode : logoForLightMode} style={styles.logo} resizeMode="contain" />
          
-          {/* <AppText style={styles.title}>OrderPro</AppText> */}
+          {/* <AppText style={styles.title}>NAVARO</AppText> */}
         </View>
 
         <TouchableOpacity style={styles.bellContainer} onPress={onNotificationPress}>
