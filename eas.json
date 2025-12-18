@@ -26,9 +26,11 @@
     },
     "production": {
       "distribution": "store",
-      "yarn": "1.22.22",
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_YARN_FLAGS": "--immutable"
+      }
     }
   },
   "submit": {
