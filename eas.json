@@ -6,20 +6,28 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      
+      "yarn": "1.22.22"
     },
     "simulator": {
       "developmentClient": true,
       "distribution": "internal",
+      
+      "yarn": "1.22.22",
       "ios": {
         "simulator": true
       }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      
+      "yarn": "1.22.22"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      
+      "yarn": "1.22.22"
     }
   },
   "submit": {
