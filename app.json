@@ -16,7 +16,16 @@
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to camera to take profile pictures and product photos.",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select profile pictures and product photos.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSExceptionDomains": {
+            "orderpro-env-1.eba-jn6vrmvc.us-east-2.elasticbeanstalk.com": {
+              "NSExceptionAllowsInsecureHTTPLoads": true,
+              "NSIncludesSubdomains": true
+            }
+          }
+        }
       },
       "bundleIdentifier": "com.abd.navaro"
     },
@@ -29,8 +38,13 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "package": "com.abd.navaro"
     },
     "plugins": [
       "expo-font",
