@@ -7,13 +7,11 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "yarn": "1.22.22",
       "channel": "development"
     },
     "simulator": {
       "developmentClient": true,
       "distribution": "internal",
-      "yarn": "1.22.22",
       "ios": {
         "simulator": true
       },
@@ -21,15 +19,19 @@
     },
     "preview": {
       "distribution": "internal",
-      "yarn": "1.22.22",
       "channel": "preview"
     },
     "production": {
       "distribution": "store",
       "autoIncrement": true,
+      "channel": "production"
+    },
+    "production-local": {
+      "distribution": "store",
+      "autoIncrement": false,
       "channel": "production",
-      "env": {
-        "EXPO_YARN_FLAGS": "--immutable"
+      "ios": {
+        "buildConfiguration": "Release"
       }
     }
   },
