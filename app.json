@@ -12,7 +12,7 @@
       "backgroundColor": "#1DBF72"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to camera to take profile pictures and product photos.",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select profile pictures and product photos.",
