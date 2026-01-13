@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
-import { useDispatch } from 'react-redux';
 import AppView from '../../components/common/AppView';
 import AppText from '../../components/common/AppText';
 import { sizes } from '../../constants';
@@ -9,7 +8,6 @@ import { useLoading } from '../../context/LoadingContext';
 import AppButton from '../../components/common/AppButton';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import apiClient from '../../api/apiClient';
-import { login, setAuthData } from '../../redux/authSlice';
 import CustomAlert from '../../components/common/CustomAlert';
 import { useCustomAlert } from '../../hooks/useCustomAlert';
 
@@ -21,11 +19,10 @@ const VerifyOTPScreen = () => {
   const [timer, setTimer] = useState(59);
   const navigation = useNavigation();
   const route = useRoute();
-  const dispatch = useDispatch();
   const { colors } = useTheme();
 
-  // Get phone number from navigation params
-  const phoneNumber = route.params?.phone || '';
+  // Get email from navigation params
+  const email = route.params?.email || '';
 
   // Refs for auto-focus
   const inputRefs = useRef([]);
@@ -68,8 +65,8 @@ const VerifyOTPScreen = () => {
       return;
     }
 
-    if (!phoneNumber) {
-      showError('Phone number not found. Please go back and try again.');
+    if (!email) {
+      showError('Email not found. Please go back and try again.');
       return;
     }
 
@@ -78,56 +75,23 @@ const VerifyOTPScreen = () => {
     setError('');
 
     try {
-      const result = await apiClient.post('auth/verify_otp/', {
-        phone: phoneNumber,
+      const result = await apiClient.post('auth/verify-email/', {
+        email: email,
         otp: otpCode
       });
 
-      console.log('OTP Verify Result:', result?.data);
-
       if (result.ok) {
-        const { access, refreshToken, user } = result.data;
-
-        // Check if user has email (profile is complete)
-        const hasEmail = user?.email && user.email.trim().length > 0;
-
-        if (hasEmail) {
-          // User has completed profile, set login to true
-          dispatch(login({
-            token: access,
-            refreshToken: refreshToken,
-            userData: user
-          }));
-
-          // Navigate to MainTabs
-          showSuccess(
-            'Login successful!',
-            'Success',
-            () => {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'MainTabs' }],
-              });
-            }
-          );
-        } else {
-          // User doesn't have email, DON'T set isLoggedIn to true yet
-          // Just store token and user data
-          dispatch(setAuthData({
-            token: access,
-            refreshToken: refreshToken,
-            userData: user
-          }));
-
-          // Navigate to CompleteProfileScreen
-          showSuccess(
-            'OTP verified! Please complete your profile.',
-            'Success',
-            () => {
-              navigation.navigate('profile', { phone: phoneNumber });
-            }
-          );
-        }
+        // OTP verified successfully - navigate to Login screen
+        showSuccess(
+          'Email verified successfully! Please login to continue.',
+          'Success',
+          () => {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Login' }],
+            });
+          }
+        );
       } else {
         // API returned error
         const errorMessage = result.data?.message || result.data?.error || 'Invalid OTP. Please try again.';
@@ -153,7 +117,7 @@ const VerifyOTPScreen = () => {
     setError('');
 
     try {
-      const result = await apiClient.post('auth/login/', { phone: phoneNumber });
+      const result = await apiClient.post('auth/resend-otp/', { email: email });
 
       if (result.ok) {
         // Reset timer
@@ -162,13 +126,12 @@ const VerifyOTPScreen = () => {
         setOtp(['', '', '', '', '', '']);
         inputRefs.current[0]?.focus();
 
-        showSuccess('OTP has been resent to your phone number.');
+        showSuccess('OTP has been resent to your email.');
       } else {
         const errorMessage = result.data?.message || 'Failed to resend OTP.';
         showError(errorMessage);
       }
     } catch (error) {
-      console.error('Resend OTP Error:', error);
       showError('Failed to resend OTP. Please try again.');
     } finally {
       hideLoading();
@@ -180,7 +143,7 @@ const VerifyOTPScreen = () => {
       <View style={{flex:1}}>
         <AppText style={[styles.title, {color:colors.text}]}>Verify OTP</AppText>
         <AppText style={[styles.subtitle, {color:colors.secondaryText}]}>
-          We've sent an OTP to {phoneNumber}. Please verify your phone number to
+          We've sent an OTP to {email}. Please verify your email to
           activate your account.
         </AppText>
       </View>
