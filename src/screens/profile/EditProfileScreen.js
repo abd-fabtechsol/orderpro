@@ -23,7 +23,7 @@ const EditProfileScreen = () => {
   const { showLoading, hideLoading } = useLoading();
   const { alertConfig, hideAlert, showSuccess, showError, showAlert } = useCustomAlert();
   const user = useSelector(state => state.auth.user);
-
+console.log("first",user)
   const [name, setName] = useState(user?.name || user?.username || '');
   const [emailValue, setEmailValue] = useState(user?.email || '');
   const [phoneNumber, setPhoneNumber] = useState(user?.phone || user?.phone_number || '');
@@ -232,6 +232,7 @@ const EditProfileScreen = () => {
         onChangeText={setEmailValue}
         keyboardType="email-address"
         autoCapitalize="none"
+         editable={false}
       />
       </View>
       <AppButton

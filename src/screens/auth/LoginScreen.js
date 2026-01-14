@@ -56,7 +56,7 @@ const LoginScreen = () => {
                 email: email.trim().toLowerCase(),
                 password: password
             });
-
+console.log("first",JSON.stringify(result))
             if (result.problem === 'TIMEOUT_ERROR') {
                 throw new Error('Request timeout');
             }
@@ -66,9 +66,10 @@ const LoginScreen = () => {
             }
 
             if (result.ok) {
-                const { access, refresh, user } = result.data;
+                const { access, refresh, user } = result.data.data;
 
                 // Store token and user data in Redux
+                console.log("1212",user)
                 dispatch(login({
                     token: access,
                     refreshToken: refresh,
@@ -86,8 +87,26 @@ const LoginScreen = () => {
                     }
                 );
             } else {
-                const errorMessage = result.data?.message || result.data?.error || 'Login failed. Please try again.';
-                showError(errorMessage);
+                // Handle error response
+                let errorMessage = 'Login failed. Please try again.';
+
+                if (result.data?.errors?.detail && Array.isArray(result.data.errors.detail)) {
+                    errorMessage = result.data.errors.detail[0];
+                } else if (result.data?.message) {
+                    errorMessage = result.data.message;
+                } else if (result.data?.error) {
+                    errorMessage = result.data.error;
+                }
+
+                // Check if email verification is required
+                const requiresVerification = result.data?.errors?.requires_verification;
+                if (requiresVerification) {
+                    showError(errorMessage, 'Verification Required', () => {
+                        navigation.navigate('otp', { email: email.trim().toLowerCase() });
+                    });
+                } else {
+                    showError(errorMessage);
+                }
             }
         } catch (error) {
             let errorMessage = 'Network error. Please check your connection and try again.';

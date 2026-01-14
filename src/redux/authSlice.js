@@ -14,6 +14,7 @@ export const authSlice = createSlice({
 	initialState,
 	reducers: {
 		login: (state, { payload }) => {
+			console.log("first66",payload.userData)
 			state.token = payload.token
 			state.refreshToken = payload.refreshToken
 			state.user=payload.userData
